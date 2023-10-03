@@ -1,3 +1,9 @@
+# SQLite DB
+/backend.db
+
+# IDEs
+.idea/
+
 # Logs
 logs
 *.log
