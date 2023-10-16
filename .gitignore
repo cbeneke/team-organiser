@@ -1,8 +1,6 @@
-# SQLite DB
-/backend.db
-
 # IDEs
 .idea/
+.vscode/
 
 # Logs
 logs
