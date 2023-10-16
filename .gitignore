@@ -1,3 +1,10 @@
+# IDEs
+.idea/
+.vscode/
+
+# Database
+*.db
+
 # Logs
 logs
 *.log
