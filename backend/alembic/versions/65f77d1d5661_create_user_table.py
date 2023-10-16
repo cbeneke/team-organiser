@@ -1,7 +1,7 @@
 """Create user table
 
 Revision ID: 65f77d1d5661
-Revises: 
+Revises:
 Create Date: 2023-10-16 09:00:56.295711
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 from uuid import uuid4
 
-from src.auth.database import GUID
+from src.database import GUID
 
 # revision identifiers, used by Alembic.
 revision: str = '65f77d1d5661'

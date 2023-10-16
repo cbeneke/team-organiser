@@ -5,7 +5,7 @@ from jose import JWTError, jwt
 
 from src.auth.constants import SECRET_KEY, ALGORITHM
 from src.auth.exceptions import InvalidToken
-import src.auth.schemas as schemas
+from src.auth.schemas import TokenData
 
 
 async def get_username_from_token(
@@ -16,7 +16,7 @@ async def get_username_from_token(
         username: str = payload.get("sub")
         if username is None:
             raise InvalidToken
-        token_data = schemas.TokenData(username=username)
+        token_data = TokenData(username=username)
     except JWTError:
         raise InvalidToken
     

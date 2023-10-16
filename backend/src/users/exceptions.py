@@ -16,3 +16,8 @@ UserNotFound = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail="User not found",
 )
+
+AccessDenied = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="Access denied",
+)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from datetime import timedelta
@@ -34,8 +34,9 @@ async def login_for_access_token(
 
 @router.put("/register", response_model=ResponseUser)
 async def register(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    username: Annotated[str, Form()],
+    password: Annotated[str, Form()],
     db: Session = Depends(get_db)
 ):
-    user = add_user(form_data.username, form_data.password, db)
+    user = add_user(username, password, db)
     return user

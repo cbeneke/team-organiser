@@ -1,6 +1,19 @@
+from enum import Enum
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, constr
 from typing import Union
+
+class RoleName(str, Enum):
+    trainer = "trainer"
+    user = "user"
+
+
+class Role(BaseModel):
+    name: RoleName
+    description: Union[str, None] = None
+
+    class Config:
+        orm_mode = True
 
 
 class BaseUser(BaseModel):
@@ -13,6 +26,7 @@ class NewUser(BaseUser):
 class ResponseUser(BaseUser):
     id: UUID = Field(default_factory=uuid4)
     is_active: bool
+    roles: list[Role] = []
 
     class Config:
         orm_mode = True
