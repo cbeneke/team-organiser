@@ -65,8 +65,6 @@ def upgrade() -> None:
     )
 
 
-
-
 def downgrade() -> None:
     op.drop_table('user_to_role')
     op.drop_table('roles')
