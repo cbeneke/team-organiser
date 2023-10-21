@@ -14,8 +14,7 @@ def get_event(
 ) -> ResponseEvent:
     event = (db
         .query(DBEvents)
-        .filter(DBEvents.id == event_id)
-        .first())
+        .get(event_id))
     
     if event is None:
         raise EventNotFound

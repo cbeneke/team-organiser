@@ -32,7 +32,7 @@ async def router_get_events(
             DBEvents.start_time <= end_time,
             DBEvents.end_time >= start_time
         )
-        .order_by(DBEvents.start_date)
+        .order_by(DBEvents.start_time)
         .all()
     )
     return events
