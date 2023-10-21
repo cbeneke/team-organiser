@@ -41,15 +41,16 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-        current_user: Annotated[DBUser, Depends(get_current_user)]
+    current_user: Annotated[DBUser, Depends(get_current_user)]
 ):
     if not current_user.is_active:
         raise UserInactive
+    
     return current_user
 
 async def is_trainer(
-        username: Annotated[str, Depends(get_username_from_token)],
-        db: Session = Depends(get_db),
+    username: Annotated[str, Depends(get_username_from_token)],
+    db: Session = Depends(get_db),
 ):
     user = get_db_user(username, db)
     if user is None:
