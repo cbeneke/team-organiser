@@ -15,7 +15,7 @@ def db():
 
     connection = sqlite3.connect('tests.db')
     db = connection.cursor()
-    
+
     yield db
 
     connection.close()
