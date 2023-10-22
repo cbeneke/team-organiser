@@ -18,7 +18,7 @@ def test_list_users(client, admin_token):
     assert response_data[1]["username"] == "user"
 
 
-def test_get_me_user(client):
+def test_get_me_user(client, admin_token):
     response = client.get(
         "/users/me",
         headers={
@@ -33,10 +33,10 @@ def test_get_me_user(client):
     assert response.status_code == 200
     assert response_data["username"] == "admin"
     assert response_data["is_active"] == True
-    assert response_data["roles"][0]["name"] == "admin"
+    assert response_data["roles"][0]["name"] == "trainer"
 
 
-def test_get_user_not_found(client):
+def test_get_user_not_found(client, admin_token):
     response = client.get(
         "/users/00000000-0000-4000-8000-000000000000",
         headers={

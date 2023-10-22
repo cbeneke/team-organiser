@@ -19,7 +19,11 @@ def db():
     yield db
 
     connection.close()
-    os.remove('tests.db')
+    # Deletion succeeds, but pytest still complains about the file not being found
+    try:
+        os.remove('tests.db')
+    except OSError:
+        pass
 
 @pytest.fixture(scope='session')
 def client(db):
@@ -33,5 +37,6 @@ def admin_token(client):
         data={"username": "admin", "password": "admin", "grant_type": "password"},
         headers={"content-type": "application/x-www-form-urlencoded"}
     )
+
     token = response.json()["access_token"]
     yield token
