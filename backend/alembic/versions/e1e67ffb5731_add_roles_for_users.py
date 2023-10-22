@@ -12,6 +12,7 @@ from alembic import op
 import sqlalchemy as sql
 
 from src.database import GUID
+from src.users.models import DBUser
 
 
 # revision identifiers, used by Alembic.
@@ -35,6 +36,7 @@ def upgrade() -> None:
         sql.Column('description', sql.String)
     )
 
+
     op.bulk_insert(
         roles_table,
         [
@@ -45,6 +47,19 @@ def upgrade() -> None:
             {
                 "name": "user",
                 "description": "A user can participate in training sessions."
+            }
+        ]
+    )
+    conn = op.get_bind()
+    admin_user_id = conn.execute("select id from users where username = 'admin'").first()[0]
+    trainer_role_id = conn.execute("select id from roles where name = 'trainer'").first()[0]
+
+    op.bulk_insert(
+        role_mapping_table,
+        [
+            {
+                "user_id": admin_user_id,
+                "role_id": trainer_role_id,
             }
         ]
     )
