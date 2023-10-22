@@ -5,6 +5,9 @@
 # Database
 *.db
 
+# PyTest
+.pytest_cache/
+
 # Logs
 logs
 *.log
