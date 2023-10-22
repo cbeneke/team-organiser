@@ -25,3 +25,13 @@ def db():
 def client(db):
     client = TestClient(app)
     yield client
+
+@pytest.fixture(scope='session')
+def admin_token(client):
+    response = client.post(
+        "/auth/login",
+        data={"username": "admin", "password": "admin", "grant_type": "password"},
+        headers={"content-type": "application/x-www-form-urlencoded"}
+    )
+    token = response.json()["access_token"]
+    yield token

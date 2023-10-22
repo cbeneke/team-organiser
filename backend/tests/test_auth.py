@@ -1,5 +1,4 @@
 from .fixtures import client, db
-import os
 
 def test_login(client):
     response = client.post(
