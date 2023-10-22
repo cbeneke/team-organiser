@@ -32,7 +32,7 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.put("/register", response_model=ResponseUser)
+@router.post("/register", response_model=ResponseUser)
 async def register(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],

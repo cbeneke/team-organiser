@@ -57,6 +57,6 @@ async def is_trainer(
     
     trainer_role = get_db_role(RoleName.trainer, db)
     if trainer_role not in user.roles:
-        raise AccessDenied
+        return False
     
     return True

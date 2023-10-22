@@ -19,7 +19,6 @@ def get_db():
     finally:
         session.close()
 
-
 ########################
 # UUID for SQLite hack #
 ########################
