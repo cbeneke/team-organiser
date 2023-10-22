@@ -2,21 +2,21 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from src.database import get_db
+import src.database as db
 
-from src.events.models import DBEvents
-from src.events.schemas import ResponseEvent
-from src.events.exceptions import EventNotFound
+import src.events.models as models
+import src.events.schemas as schemas
+import src.events.exceptions as exceptions
 
 def get_event(
     event_id: UUID,
-    db: Session = Depends(get_db),
-) -> ResponseEvent:
+    db: Session = Depends(db.get_db),
+) -> schemas.ResponseEvent:
     event = (db
-        .query(DBEvents)
+        .query(models.DBEvents)
         .get(event_id))
     
     if event is None:
-        raise EventNotFound
+        raise exceptions.EventNotFound
     
     return event

@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from src.users.schemas import ResponseUser
+import src.users.schemas as user_schemas
 
 
 class NewEvent(BaseModel):
@@ -13,7 +13,7 @@ class NewEvent(BaseModel):
 
 class ResponseEvent(NewEvent):
     id: UUID = Field(default_factory=uuid4)
-    owner: ResponseUser
+    owner: user_schemas.ResponseUser
 
     class Config:
         orm_mode = True

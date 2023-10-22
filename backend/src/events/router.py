@@ -5,59 +5,50 @@ from datetime import date, datetime
 
 from src.database import get_db
 
-from src.events.models import DBEvents
-from src.events.schemas import ResponseEvent, NewEvent
-from src.events.dependencies import get_event
-from src.events.service import add_event, update_event, get_events, parse_timerange
-from src.events.exceptions import EventDatesInvalid
+import src.events.schemas as schemas
+import src.events.dependencies as dependencies
+import src.events.service as service
+import src.events.utils as utils
 
-from src.users.dependencies import get_current_active_user
-from src.users.exceptions import AccessDenied
-from src.users.models import DBUser
+import src.users.dependencies as user_dependencies
+import src.users.exceptions as user_exceptions
+import src.users.schemas as user_schemas
 
 router = APIRouter()
 
-@router.get("/", response_model=list[ResponseEvent])
-async def router_get_events(
+@router.get("/", response_model=list[schemas.ResponseEvent])
+async def get_events(
     start_date: Optional[Annotated[date, Form()]] = None,
     end_date: Optional[Annotated[date, Form()]] = None,
-    user: DBUser = Depends(get_current_active_user),
+    user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    start_time, end_time = parse_timerange(start_date, end_date)
+    start_time, end_time = utils.parse_timerange(start_date, end_date)
 
-    events = (db
-        .query(DBEvents)
-        .filter(
-            DBEvents.start_time <= end_time,
-            DBEvents.end_time >= start_time
-        )
-        .order_by(DBEvents.start_time)
-        .all()
-    )
+    events = service.get_events(start_time, end_time, db)
     return events
 
-@router.post("/", response_model=ResponseEvent, status_code=status.HTTP_201_CREATED)
-async def router_add_event(
-    event: NewEvent,
-    user: DBUser = Depends(get_current_active_user),
+@router.post("/", response_model=schemas.ResponseEvent, status_code=status.HTTP_201_CREATED)
+async def add_event(
+    event: schemas.NewEvent,
+    user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
     db: Session = Depends(get_db),
 ):
 
-    event = add_event(event, user, db)
+    event = service.add_event(event, user, db)
     return event
 
-@router.get("/{event_id}", response_model=ResponseEvent)
+@router.get("/{event_id}", response_model=schemas.ResponseEvent)
 async def router_get_event(
-    user: DBUser = Depends(get_current_active_user),
-    event: ResponseEvent = Depends(get_event),
+    user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
+    event: schemas.ResponseEvent = Depends(dependencies.get_event),
 ):
     return event
 
 @router.delete("/{event_id}")
 async def router_delete_event(
-    user: DBUser = Depends(get_current_active_user),
-    event: ResponseEvent = Depends(get_event),
+    event: schemas.ResponseEvent = Depends(dependencies.get_event),
+    user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
     db: Session = Depends(get_db),
 ):
     db.delete(event)
@@ -65,18 +56,19 @@ async def router_delete_event(
 
     return {}
 
-@router.put("/{event_id}", response_model=ResponseEvent)
+@router.put("/{event_id}", response_model=schemas.ResponseEvent)
 async def router_update_event(
     title: Optional[Annotated[str, Form()]] = None,
     description: Optional[Annotated[str, Form()]] = None,
     start_time: Optional[Annotated[datetime, Form()]] = None,
     end_time: Optional[Annotated[datetime, Form()]] = None,
+    event: schemas.ResponseEvent = Depends(dependencies.get_event),
+    user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
+    is_trainer: bool = Depends(user_dependencies.is_trainer),
     db: Session = Depends(get_db),
-    event: ResponseEvent = Depends(get_event),
-    user: DBUser = Depends(get_current_active_user),
 ):
-    if not event.owner == user and not user.is_trainer:
-        raise AccessDenied
+    if not is_trainer and not event.owner == user:
+        raise user_exceptions.AccessDenied
 
-    event = update_event(db, event, title, description, start_time, end_time)
+    event = service.update_event(db, event, title, description, start_time, end_time)
     return event
