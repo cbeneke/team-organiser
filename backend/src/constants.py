@@ -1,3 +1,3 @@
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///backend.db")
+DATABASE_URL = os.environ.get("DATABASE_URL")

@@ -12,7 +12,7 @@ from src.main import app
 @pytest.fixture(scope='session')
 def db():
     config = Config('alembic.ini')
-    config.set_main_option('sqlalchemy.url', os.environ["DATABASE_URL"])
+    config.set_main_option('sqlalchemy.url', os.environ.get("DATABASE_URL"))
     command.upgrade(config, 'head')
 
     connection = sqlite3.connect('tests.db')
@@ -23,7 +23,7 @@ def db():
     connection.close()
     # Deletion succeeds, but pytest still complains about the file not being found
     try:
-        os.remove('tests.db')
+        os.remove(os.environ.get("DATABASE_FILE"))
     except OSError:
         pass
 
