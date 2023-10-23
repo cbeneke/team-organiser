@@ -27,7 +27,10 @@ jobs:
         pip install -r backend/requirements.txt
 
     - name: Run pytest
-      run: pytest backend/tests
+      run: |
+        cd backend/
+        pytest tests
+
   black:
     name: Linting
     runs-on: ubuntu-latest
