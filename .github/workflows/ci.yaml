@@ -1,4 +1,4 @@
-name: pytest-backend
+name: CI
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 
 jobs:
   pytest:
+    name: Testing
     runs-on: ubuntu-latest
 
     steps:
@@ -28,6 +29,7 @@ jobs:
     - name: Run pytest
       run: pytest backend/tests
   black:
+    name: Linting
     runs-on: ubuntu-latest
 
     steps:
