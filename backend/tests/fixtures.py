@@ -11,7 +11,7 @@ from src.main import app
 
 @pytest.fixture(scope='session')
 def db():
-    config = Config('alembic.ini')
+    config = Config('backend/alembic.ini')
     config.set_main_option('sqlalchemy.url', os.environ["DATABASE_URL"])
     command.upgrade(config, 'head')
 
