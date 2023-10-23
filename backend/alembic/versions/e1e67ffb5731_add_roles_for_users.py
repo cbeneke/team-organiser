@@ -22,7 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.create_table(
+    role_mapping_table = op.create_table(
         'user_to_role',
         sql.Column("user_id", GUID(), sql.ForeignKey("users.id")),
         sql.Column("role_id", GUID(), sql.ForeignKey("roles.id")),
@@ -35,6 +35,7 @@ def upgrade() -> None:
         sql.Column('description', sql.String)
     )
 
+
     op.bulk_insert(
         roles_table,
         [
@@ -45,6 +46,33 @@ def upgrade() -> None:
             {
                 "name": "user",
                 "description": "A user can participate in training sessions."
+            }
+        ]
+    )
+    conn = op.get_bind()
+    admin_user_id = conn.execute(sql.text("select id from users where username = 'admin'")).first()[0]
+    trainer_role_id = conn.execute(sql.text("select id from roles where name = 'trainer'")).first()[0]
+
+    op.bulk_insert(
+        role_mapping_table,
+        [
+            {
+                "user_id": admin_user_id,
+                "role_id": trainer_role_id,
+            }
+        ]
+    )
+
+    conn = op.get_bind()
+    admin_user_id = conn.execute(sql.text("select id from users where username = 'admin'")).first()[0]
+    trainer_role_id = conn.execute(sql.text("select id from roles where name = 'trainer'")).first()[0]
+
+    op.bulk_insert(
+        role_mapping_table,
+        [
+            {
+                "user_id": admin_user_id,
+                "role_id": trainer_role_id,
             }
         ]
     )

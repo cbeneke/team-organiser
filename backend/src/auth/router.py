@@ -17,10 +17,11 @@ from src.auth.service import create_access_token
 
 router = APIRouter()
 
+
 @router.post("/login", response_model=Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
@@ -32,11 +33,11 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.put("/register", response_model=ResponseUser)
+@router.post("/register", response_model=ResponseUser)
 async def register(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     user = add_user(username, password, db)
     return user

@@ -14,29 +14,16 @@ def get_password_hash(password):
 
 
 def get_db_user(username: str, db: Session):
-    return (db
-            .query(DBUser)
-            .filter(DBUser.username == username)
-            .first()
-    )
+    return db.query(DBUser).filter(DBUser.username == username).first()
+
 
 def get_db_user_by_id(user_id: UUID, db: Session):
-    return (db
-            .query(DBUser)
-            .filter(DBUser.id == user_id)
-            .first()
-    )
+    return db.query(DBUser).filter(DBUser.id == user_id).first()
+
 
 def get_all_db_users(db: Session):
-    return (db
-            .query(DBUser)
-            .order_by(DBUser.username)
-            .all()
-    )
+    return db.query(DBUser).order_by(DBUser.username).all()
+
 
 def get_db_role(rolename: str, db: Session):
-    return (db
-            .query(DBRoles)
-            .filter(DBRoles.name == rolename)
-            .first()
-    )
+    return db.query(DBRoles).filter(DBRoles.name == rolename).first()
