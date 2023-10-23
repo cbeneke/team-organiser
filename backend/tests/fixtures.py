@@ -80,9 +80,8 @@ def user(client):
 
 @pytest.fixture(scope='function')
 def test_user(client):
-    letters = string.ascii_lowercase
-    username = ''.join(random.choice(letters) for _ in range(16))
-    password = ''.join(random.choice(letters) for _ in range(16))
+    username = get_random_string(16)
+    password = get_random_string(16)
 
     response = client.post(
         "/auth/register",
@@ -108,3 +107,7 @@ def test_user(client):
         f"/users/{id}",
         headers={"Authorization": f"Bearer {token}"}
     )
+
+def get_random_string(length: int, hex: bool = False):
+    letters = string.ascii_lowercase if not hex else string.hexdigits
+    return ''.join(random.choice(letters) for _ in range(length))
