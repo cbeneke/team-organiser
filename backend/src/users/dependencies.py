@@ -6,8 +6,13 @@ from uuid import UUID
 from src.database import get_db
 
 from src.users.models import DBUser
-from src.users.utils import get_db_user, get_db_user_by_id, get_all_db_users, get_db_role
-from src.users.exceptions  import UserInactive, UserNotFound, AccessDenied
+from src.users.utils import (
+    get_db_user,
+    get_db_user_by_id,
+    get_all_db_users,
+    get_db_role,
+)
+from src.users.exceptions import UserInactive, UserNotFound, AccessDenied
 from src.users.schemas import RoleName
 
 from src.auth.dependencies import get_username_from_token
@@ -19,6 +24,7 @@ async def get_all_users(
 ):
     users = get_all_db_users(db)
     return users
+
 
 async def get_user(
     user_id: UUID,
@@ -48,16 +54,13 @@ async def get_current_active_user(
     
     return current_user
 
-async def is_trainer(
-    username: Annotated[str, Depends(get_username_from_token)],
+
+async def get_current_active_admin_user(
+    user: DBUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    user = get_db_user(username, db)
-    if user is None:
-        raise InvalidToken
-    
     trainer_role = get_db_role(RoleName.trainer, db)
     if trainer_role not in user.roles:
         raise AccessDenied
-    
-    return True
+
+    return user
