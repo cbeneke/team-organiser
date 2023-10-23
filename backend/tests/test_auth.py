@@ -1,4 +1,4 @@
-from .fixtures import client, db
+from .fixtures import admin, client, db
 
 def test_login(client):
     response = client.post(
@@ -30,10 +30,10 @@ def test_login_invalid_credentials(client):
     assert "token_type" not in response_data
 
 
-def test_create_user(client):
+def test_register_user(client):
     response = client.post(
         "/auth/register",
-        data={"username": "user", "password": "test"},
+        data={"username": "new_user", "password": "test"},
         headers={"content-type": "application/x-www-form-urlencoded"}
     )
 
@@ -41,16 +41,17 @@ def test_create_user(client):
     print(response_data)
 
     assert response.status_code == 200
-    assert response_data["username"] == "user"
+    assert response_data["username"] == "new_user"
     assert "password" not in response_data
     assert response_data["is_active"] == True
+    assert len(response_data["roles"]) == 1
     assert response_data["roles"][0]["name"] == "user"
 
 
-def test_create_user_again(client):
+def test_register_existing_username(client):
     response = client.post(
         "/auth/register",
-        data={"username": "user", "password": "other"},
+        data={"username": "new_user", "password": "other"},
         headers={"content-type": "application/x-www-form-urlencoded"}
     )
 

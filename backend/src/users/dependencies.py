@@ -29,7 +29,6 @@ async def get_user(
         raise UserNotFound
     return user
 
-
 async def get_current_user(
     username: Annotated[str, Depends(get_username_from_token)],
     db: Session = Depends(get_db),
@@ -47,16 +46,12 @@ async def get_current_active_user(
         raise UserInactive
     return current_user
 
-async def is_trainer(
-        username: Annotated[str, Depends(get_username_from_token)],
+async def get_current_active_admin_user(
+        user: DBUser = Depends(get_current_active_user),
         db: Session = Depends(get_db),
-):
-    user = get_db_user(username, db)
-    if user is None:
-        raise InvalidToken
-    
+):  
     trainer_role = get_db_role(RoleName.trainer, db)
     if trainer_role not in user.roles:
-        return False
+        raise AccessDenied
     
-    return True
+    return user

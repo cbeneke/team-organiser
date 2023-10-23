@@ -49,3 +49,11 @@ def delete_user(user_id: UUID, db: Session):
     db.delete(user)
     db.commit()
     return
+
+def is_owner_or_admin(
+    user: DBUser,
+    actor: DBUser,
+    db: Session
+):
+    trainer_role = get_db_role(RoleName.trainer, db)
+    return user.id == actor.id or trainer_role in actor.roles
