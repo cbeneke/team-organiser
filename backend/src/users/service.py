@@ -1,10 +1,17 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from src.users.utils import get_db_user, get_db_user_by_id, get_password_hash, verify_password, get_db_role
+from src.users.utils import (
+    get_db_user,
+    get_db_user_by_id,
+    get_password_hash,
+    verify_password,
+    get_db_role,
+)
 from src.users.models import DBUser
 from src.users.exceptions import UsernameAlreadyInUse, UserNotFound
 from src.users.schemas import RoleName
+
 
 def authenticate_user(username: str, password: str, db: Session):
     user = get_db_user(username, db)
@@ -14,6 +21,7 @@ def authenticate_user(username: str, password: str, db: Session):
         return False
     return user
 
+
 def add_user(username: str, password: str, db: Session):
     if get_db_user(username, db):
         raise UsernameAlreadyInUse
@@ -22,12 +30,13 @@ def add_user(username: str, password: str, db: Session):
         username=username,
         hashed_password=hashed_password,
         is_active=True,
-        roles=[get_db_role(RoleName.user, db)]
+        roles=[get_db_role(RoleName.user, db)],
     )
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
+
 
 def update_user(user_id: UUID, password: str, is_trainer: bool, db: Session):
     user = get_db_user_by_id(user_id, db)
@@ -42,6 +51,7 @@ def update_user(user_id: UUID, password: str, is_trainer: bool, db: Session):
     db.refresh(user)
     return user
 
+
 def delete_user(user_id: UUID, db: Session):
     user = get_db_user_by_id(user_id, db)
     if not user:
@@ -49,3 +59,8 @@ def delete_user(user_id: UUID, db: Session):
     db.delete(user)
     db.commit()
     return
+
+
+def is_owner_or_admin(user: DBUser, actor: DBUser, db: Session):
+    trainer_role = get_db_role(RoleName.trainer, db)
+    return user.id == actor.id or trainer_role in actor.roles

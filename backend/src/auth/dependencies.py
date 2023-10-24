@@ -19,5 +19,5 @@ async def get_username_from_token(
         token_data = TokenData(username=username)
     except JWTError:
         raise InvalidToken
-    
+
     return token_data.username

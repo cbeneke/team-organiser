@@ -50,9 +50,10 @@ def upgrade() -> None:
             }
         ]
     )
+    
     conn = op.get_bind()
-    admin_user_id = conn.execute("select id from users where username = 'admin'").first()[0]
-    trainer_role_id = conn.execute("select id from roles where name = 'trainer'").first()[0]
+    admin_user_id = conn.execute(sql.text("select id from users where username = 'admin'")).first()[0]
+    trainer_role_id = conn.execute(sql.text("select id from roles where name = 'trainer'")).first()[0]
 
     op.bulk_insert(
         role_mapping_table,
