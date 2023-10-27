@@ -16,13 +16,16 @@ class DBEvents(Base):
     owner_id = sql.Column(GUID(), sql.ForeignKey("users.id"))
     owner = relationship("DBUser")
 
+
 class DBEventResponses(Base):
     __tablename__ = "event_responses"
 
     id = sql.Column(GUID(), primary_key=True, index=True, default=lambda: str(uuid4()))
     event_id = sql.Column(sql.ForeignKey("event.id"), index=True)
     user_id = sql.Column(sql.ForeignKey("users.id"), index=True)
-    status = sql.Column(sql.Enum("accepted", "declined", "pending"), default="pending", nullable=False)
+    status = sql.Column(
+        sql.Enum("accepted", "declined", "pending"), default="pending", nullable=False
+    )
 
 
 # class DBPeriodicEvents(Base):
@@ -39,7 +42,7 @@ class DBEventResponses(Base):
 
 # class DBPeriodicEventException(Base):
 #     __tablename__ = "periodic_event_exception"
-    
+
 #     event_id = sql.Column(sql.ForeignKey("event.id"))
 #     date = sql.Column(sql.DateTime, index=True, nullable=False)
 #     is_skipped = sql.Column(sql.Boolean, default=False, nullable=False)
@@ -48,7 +51,7 @@ class DBEventResponses(Base):
 
 # class DBPeriodicEventResponse(Base):
 #     __tablename__ = "user_to_event"
-    
+
 #     event_id = sql.Column(sql.ForeignKey("periodic_events.id"))
 #     user_id = sql.Column(sql.ForeignKey("user.id"))
 #     status = sql.Column(sql.Enum("accepted", "declined", "pending"), default="pending", nullable=False)
@@ -56,7 +59,7 @@ class DBEventResponses(Base):
 
 # class DBPeriodicEventResponseException(Base):
 #     __tablename__ = "periodic_event_response_exception"
-    
+
 #     event_id = sql.Column(sql.ForeignKey("event.id")),
 #     user_id = sql.Column(sql.ForeignKey("user.id")),
 #     date = sql.Column(sql.DateTime, index=True),

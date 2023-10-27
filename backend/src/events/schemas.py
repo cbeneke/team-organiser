@@ -11,6 +11,7 @@ class NewEvent(BaseModel):
     start_time: datetime
     end_time: datetime
 
+
 class ResponseEvent(NewEvent):
     id: UUID = Field(default_factory=uuid4)
     owner: ResponseUser

@@ -14,7 +14,6 @@ def add_event(
     owner: DBUser,
     db: Session,
 ):
-
     if new.start_time >= new.end_time:
         raise EventDatesInvalid
 
@@ -32,6 +31,7 @@ def add_event(
 
     return event
 
+
 def update_event(
     db: Session,
     event: ResponseEvent,
@@ -40,9 +40,8 @@ def update_event(
     start_time: Optional[datetime],
     end_time: Optional[datetime],
 ) -> ResponseEvent:
-
     db_event = db.query(DBEvents).get(event.id)
-    
+
     db_event.title = title if title else event.title
     db_event.description = description if description else event.description
     db_event.start_time = start_time if start_time else event.start_time
@@ -53,30 +52,25 @@ def update_event(
 
     return event
 
-def get_events(
-    db: Session,
-    start_time: datetime,
-    end_time: datetime
-) -> ResponseEvent:
 
-    return (db
-        .query(DBEvents)
+def get_events(db: Session, start_time: datetime, end_time: datetime) -> ResponseEvent:
+    return (
+        db.query(DBEvents)
         .filter(DBEvents.start_time <= end_time)
         .filter(DBEvents.end_time >= start_time)
         .order_by(DBEvents.start_time)
         .all()
     )
 
+
 def parse_timerange(
-    start_date: Optional[date],
-    end_date: Optional[date]
+    start_date: Optional[date], end_date: Optional[date]
 ) -> tuple[datetime, datetime]:
-    
     if not start_date:
         start_date = date.today()
     if not end_date:
         end_date = start_date + timedelta(days=7)
-    
+
     start_time = datetime.combine(start_date, datetime.min.time())
     end_time = datetime.combine(end_date, datetime.max.time())
 

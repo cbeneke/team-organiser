@@ -14,8 +14,10 @@ from src.events.exceptions import EventDatesInvalid
 from src.users.dependencies import get_current_active_user
 from src.users.exceptions import AccessDenied
 from src.users.models import DBUser
+from src.users.utils import is_admin_or_owner
 
 router = APIRouter()
+
 
 @router.get("/", response_model=list[ResponseEvent])
 async def router_get_events(
@@ -26,16 +28,14 @@ async def router_get_events(
 ):
     start_time, end_time = parse_timerange(start_date, end_date)
 
-    events = (db
-        .query(DBEvents)
-        .filter(
-            DBEvents.start_time <= end_time,
-            DBEvents.end_time >= start_time
-        )
+    events = (
+        db.query(DBEvents)
+        .filter(DBEvents.start_time <= end_time, DBEvents.end_time >= start_time)
         .order_by(DBEvents.start_time)
         .all()
     )
     return events
+
 
 @router.post("/", response_model=ResponseEvent, status_code=status.HTTP_201_CREATED)
 async def router_add_event(
@@ -43,9 +43,9 @@ async def router_add_event(
     user: DBUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-
     event = add_event(event, user, db)
     return event
+
 
 @router.get("/{event_id}", response_model=ResponseEvent)
 async def router_get_event(
@@ -54,16 +54,21 @@ async def router_get_event(
 ):
     return event
 
+
 @router.delete("/{event_id}")
 async def router_delete_event(
     user: DBUser = Depends(get_current_active_user),
     event: ResponseEvent = Depends(get_event),
     db: Session = Depends(get_db),
 ):
+    if not is_admin_or_owner(user, event.owner, db):
+        raise AccessDenied
+
     db.delete(event)
     db.commit()
 
     return {}
+
 
 @router.put("/{event_id}", response_model=ResponseEvent)
 async def router_update_event(
@@ -75,7 +80,7 @@ async def router_update_event(
     event: ResponseEvent = Depends(get_event),
     user: DBUser = Depends(get_current_active_user),
 ):
-    if not event.owner == user and not user.is_trainer:
+    if not is_admin_or_owner(user, event.owner, db):
         raise AccessDenied
 
     event = update_event(db, event, title, description, start_time, end_time)

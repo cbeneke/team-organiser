@@ -51,7 +51,7 @@ async def get_current_active_user(
 ):
     if not current_user.is_active:
         raise UserInactive
-    
+
     return current_user
 
 

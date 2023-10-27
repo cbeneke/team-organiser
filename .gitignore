@@ -5,7 +5,8 @@
 # Database
 *.db
 
-# PyTest
+# Python Caches 
+__pycache__
 .pytest_cache/
 
 # Logs

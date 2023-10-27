@@ -1,10 +1,10 @@
 from .fixtures import admin, client, db
 
+
 def test_login(client):
     response = client.post(
         "/auth/login",
         data={"username": "admin", "password": "admin", "grant_type": "password"},
-        headers={"content-type": "application/x-www-form-urlencoded"}
     )
 
     response_data = response.json()
@@ -19,7 +19,6 @@ def test_login_invalid_credentials(client):
     response = client.post(
         "/auth/login",
         data={"username": "invalid", "password": "user", "grant_type": "password"},
-        headers={"content-type": "application/x-www-form-urlencoded"}
     )
 
     response_data = response.json()
@@ -34,7 +33,6 @@ def test_register_user(client):
     response = client.post(
         "/auth/register",
         data={"username": "new_user", "password": "test"},
-        headers={"content-type": "application/x-www-form-urlencoded"}
     )
 
     response_data = response.json()
@@ -52,7 +50,6 @@ def test_register_existing_username(client):
     response = client.post(
         "/auth/register",
         data={"username": "new_user", "password": "other"},
-        headers={"content-type": "application/x-www-form-urlencoded"}
     )
 
     response_data = response.json()
