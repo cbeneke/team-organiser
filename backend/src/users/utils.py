@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from src.users.models import DBUser, DBRoles
+from src.users.schemas import RoleName
 from src.auth.constants import pwd_context
 
 
@@ -27,3 +28,11 @@ def get_all_db_users(db: Session):
 
 def get_db_role(rolename: str, db: Session):
     return db.query(DBRoles).filter(DBRoles.name == rolename).first()
+
+
+def is_admin_or_owner(user: DBUser, owner: DBUser, db: Session):
+    trainer_role = get_db_role(RoleName.trainer, db)
+    if trainer_role in user.roles or user == owner:
+        return True
+    else:
+        return False

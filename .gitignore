@@ -5,8 +5,12 @@
 # Database
 *.db
 
-# PyTest
+# Python Caches 
+__pycache__
 .pytest_cache/
+
+# Virtual environment
+.venv/
 
 # Logs
 logs

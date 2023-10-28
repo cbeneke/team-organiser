@@ -4,7 +4,8 @@ import sqlalchemy as sql
 from sqlalchemy.orm import Mapped, relationship
 from uuid import uuid4
 
-from src.database import Base, GUID
+from src.constants import Base
+from src.database import GUID
 
 
 user_to_role = sql.Table(
