@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from datetime import date, datetime, timedelta
+from datetime import datetime
 
 from src.events.models import DBEvents
 from src.events.schemas import ResponseEvent, NewEvent
@@ -22,6 +22,7 @@ def add_event(
         description=new.description,
         start_time=new.start_time,
         end_time=new.end_time,
+        display_color=new.display_color,
         owner=owner,
     )
 
@@ -39,6 +40,7 @@ def update_event(
     description: Optional[str],
     start_time: Optional[datetime],
     end_time: Optional[datetime],
+    display_color: Optional[str],
 ) -> ResponseEvent:
     event = db.query(DBEvents).get(event.id)
 
@@ -46,6 +48,7 @@ def update_event(
     event.description = description if description else event.description
     event.start_time = start_time if start_time else event.start_time
     event.end_time = end_time if end_time else event.end_time
+    event.display_color = display_color if display_color else event.display_color
 
     db.commit()
     db.refresh(event)
@@ -61,20 +64,3 @@ def get_events(db: Session, start_time: datetime, end_time: datetime) -> Respons
         .order_by(DBEvents.start_time)
         .all()
     )
-
-
-def parse_timerange(
-    start_date: Optional[date], end_date: Optional[date]
-) -> tuple[datetime, datetime]:
-    if not start_date:
-        start_date = date.today()
-    if not end_date:
-        end_date = start_date + timedelta(days=7)
-
-    if end_date < start_date:
-        raise EventDatesInvalid
-
-    start_time = datetime.combine(start_date, datetime.min.time())
-    end_time = datetime.combine(end_date, datetime.max.time())
-
-    return start_time, end_time

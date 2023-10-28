@@ -12,6 +12,7 @@ def new_event(admin, client):
             "description": "Temporary Description",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
@@ -121,6 +122,7 @@ def test_add_event(client, user):
             "description": "Test Description",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
@@ -136,6 +138,7 @@ def test_add_event(client, user):
     assert response_data["description"] == "Test Description"
     assert response_data["start_time"] == "2023-01-01T12:00:00"
     assert response_data["end_time"] == "2023-01-01T13:00:00"
+    assert response_data["display_color"] == "#000000"
     assert response_data["owner"]["id"] == user["id"]
 
 
@@ -201,6 +204,7 @@ def test_user_update_own_event(client, user):
             "description": "Test Description",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
@@ -288,6 +292,7 @@ def test_user_delete_own_event(client, user):
             "description": "Test Description",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",

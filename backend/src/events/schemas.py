@@ -10,6 +10,7 @@ class NewEvent(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
+    display_color: str
 
 
 class ResponseEvent(NewEvent):

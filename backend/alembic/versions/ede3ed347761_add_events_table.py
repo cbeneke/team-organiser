@@ -31,25 +31,10 @@ def upgrade() -> None:
         sql.Column("description", sql.String),
         sql.Column("start_time", sql.DateTime, index=True),
         sql.Column("end_time", sql.DateTime, index=True),
+        sql.Column("display_color", sql.String),
         sql.Column("owner_id", GUID(), sql.ForeignKey("users.id")),
-    )
-
-    op.create_table(
-        "event_responses",
-        sql.Column(
-            "id", GUID(), primary_key=True, index=True, default=lambda: str(uuid4())
-        ),
-        sql.Column("event_id", GUID(), sql.ForeignKey("events.id"), index=True),
-        sql.Column("user_id", GUID(), sql.ForeignKey("users.id"), index=True),
-        sql.Column(
-            "status",
-            sql.Enum("accepted", "declined", "pending"),
-            default="pending",
-            nullable=False,
-        ),
     )
 
 
 def downgrade() -> None:
-    op.drop_table("event_responses")
     op.drop_table("events")

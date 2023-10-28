@@ -14,16 +14,6 @@ class DBEvents(Base):
     description = sql.Column(sql.String)
     start_time = sql.Column(sql.DateTime, index=True)
     end_time = sql.Column(sql.DateTime, index=True)
+    display_color = sql.Column(sql.String)
     owner_id = sql.Column(GUID(), sql.ForeignKey("users.id"))
     owner = relationship("DBUser")
-
-
-class DBEventResponses(Base):
-    __tablename__ = "event_responses"
-
-    id = sql.Column(GUID(), primary_key=True, index=True, default=lambda: str(uuid4()))
-    event_id = sql.Column(sql.ForeignKey("event.id"), index=True)
-    user_id = sql.Column(sql.ForeignKey("users.id"), index=True)
-    status = sql.Column(
-        sql.Enum("accepted", "declined", "pending"), default="pending", nullable=False
-    )

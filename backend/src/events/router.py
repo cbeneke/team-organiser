@@ -8,8 +8,8 @@ from src.database import get_db
 from src.events.models import DBEvents
 from src.events.schemas import ResponseEvent, NewEvent
 from src.events.dependencies import get_event
-from src.events.service import add_event, update_event, get_events, parse_timerange
-from src.events.exceptions import EventDatesInvalid
+from src.events.service import add_event, update_event
+from src.events.utils import parse_timerange
 
 from src.users.dependencies import get_current_active_user
 from src.users.exceptions import AccessDenied
@@ -76,6 +76,7 @@ async def router_update_event(
     description: Optional[Annotated[str, Form()]] = None,
     start_time: Optional[Annotated[datetime, Form()]] = None,
     end_time: Optional[Annotated[datetime, Form()]] = None,
+    display_color: Optional[Annotated[str, Form()]] = None,
     db: Session = Depends(get_db),
     event: ResponseEvent = Depends(get_event),
     user: DBUser = Depends(get_current_active_user),
@@ -83,5 +84,7 @@ async def router_update_event(
     if not is_admin_or_owner(user, event.owner, db):
         raise AccessDenied
 
-    event = update_event(db, event, title, description, start_time, end_time)
+    event = update_event(
+        db, event, title, description, start_time, end_time, display_color
+    )
     return event

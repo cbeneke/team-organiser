@@ -5,7 +5,21 @@ Point.Blank App
 # Backend
 
 ## Requirements
-Create a virtual Env with Python 3.9 and install the requirements.txt. If you are running VSCode, ensure that the `cwd` in the launch.json is configured to the backend subfolder (needs an absolute path).
+Create a virtual Env with Python 3.9 and install the requirements.txt. If you are running VSCode, ensure that the `cwd` in the launch.json is configured to the backend subfolder (needs an absolute path) and the `uvicorn` command uses `src.main:app` as main entrypoint. I.e.
+
+```json
+    "configurations": [
+        {
+[...]
+            "module": "uvicorn",
+            "args": [
+                "src.main:app",
+                "--reload"
+            ],
+[...]
+            "cwd": "/Users/lisa/repositories/github.com/lisa-maria-maker/point-blank/backend"
+        }
+```
 
 Then create a `.env` file in the project root folder, which contains the database URL and JWT key:
 
