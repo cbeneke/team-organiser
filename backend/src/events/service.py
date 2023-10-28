@@ -40,12 +40,12 @@ def update_event(
     start_time: Optional[datetime],
     end_time: Optional[datetime],
 ) -> ResponseEvent:
-    db_event = db.query(DBEvents).get(event.id)
+    event = db.query(DBEvents).get(event.id)
 
-    db_event.title = title if title else event.title
-    db_event.description = description if description else event.description
-    db_event.start_time = start_time if start_time else event.start_time
-    db_event.end_time = end_time if end_time else event.end_time
+    event.title = title if title else event.title
+    event.description = description if description else event.description
+    event.start_time = start_time if start_time else event.start_time
+    event.end_time = end_time if end_time else event.end_time
 
     db.commit()
     db.refresh(event)
@@ -70,6 +70,9 @@ def parse_timerange(
         start_date = date.today()
     if not end_date:
         end_date = start_date + timedelta(days=7)
+
+    if end_date < start_date:
+        raise EventDatesInvalid
 
     start_time = datetime.combine(start_date, datetime.min.time())
     end_time = datetime.combine(end_date, datetime.max.time())

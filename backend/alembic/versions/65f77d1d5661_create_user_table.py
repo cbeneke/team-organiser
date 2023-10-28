@@ -15,7 +15,7 @@ from src.database import GUID
 from src.users.utils import get_password_hash
 
 # revision identifiers, used by Alembic.
-revision: str = '65f77d1d5661'
+revision: str = "65f77d1d5661"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,8 +23,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     users_table = op.create_table(
-        'users',
-        sa.Column("id", GUID(), primary_key=True, index=True, default=lambda: str(uuid4())),
+        "users",
+        sa.Column(
+            "id", GUID(), primary_key=True, index=True, default=lambda: str(uuid4())
+        ),
         sa.Column("username", sa.String, unique=True, index=True),
         sa.Column("first_name", sa.String),
         sa.Column("hashed_password", sa.String),
@@ -38,10 +40,11 @@ def upgrade() -> None:
                 "username": "admin",
                 "first_name": "Admin",
                 "hashed_password": get_password_hash("admin"),
-                "is_active": True
+                "is_active": True,
             }
-        ]
+        ],
     )
 
+
 def downgrade() -> None:
-    op.drop_table('users')
+    op.drop_table("users")

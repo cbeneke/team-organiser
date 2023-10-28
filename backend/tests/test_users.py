@@ -27,7 +27,10 @@ def new_user(client):
 
     yield {"token": token, "id": id}
 
-    client.delete(f"/users/{id}", headers={"Authorization": f"Bearer {token}"})
+    try:
+        client.delete(f"/users/{id}", headers={"Authorization": f"Bearer {token}"})
+    except:
+        pass
 
 
 def test_list_users(client, admin):

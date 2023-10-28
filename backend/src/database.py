@@ -1,17 +1,19 @@
-import databases
 import sqlalchemy as sql
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from fastapi import HTTPException, status
 
 from src.constants import DATABASE_URL
 
-database = databases.Database(DATABASE_URL)
-engine = sql.create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
 
 def get_db():
+    if not DATABASE_URL:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Required env variable DATABASE_URL not configured!",
+        )
+    engine = sql.create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = SessionLocal()
     try:
         yield session
