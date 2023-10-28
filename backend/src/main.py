@@ -11,7 +11,6 @@ app.include_router(user.router, prefix="/users")
 app.include_router(events.router, prefix="/events")
 
 
-
 @app.get("/")
 async def root():
     return
