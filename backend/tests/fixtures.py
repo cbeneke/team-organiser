@@ -52,7 +52,7 @@ def admin(client):
     yield {'token': token, 'id': id}
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def user(client):
     response = client.post(
         "/auth/register",

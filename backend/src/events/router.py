@@ -13,6 +13,7 @@ import src.events.utils as utils
 import src.users.dependencies as user_dependencies
 import src.users.exceptions as user_exceptions
 import src.users.schemas as user_schemas
+import src.users.utils as user_utils
 
 router = APIRouter()
 
@@ -64,10 +65,10 @@ async def router_update_event(
     end_time: Optional[Annotated[datetime, Form()]] = None,
     event: schemas.ResponseEvent = Depends(dependencies.get_event),
     user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
-    is_trainer: bool = Depends(user_dependencies.is_trainer),
     db: Session = Depends(get_db),
 ):
-    if not is_trainer and not event.owner == user:
+    trainer_role = user_utils.get_db_role(user_schemas.RoleName.trainer, db)
+    if trainer_role not in user.roles and not event.owner == user:
         raise user_exceptions.AccessDenied
 
     event = service.update_event(db, event, title, description, start_time, end_time)
