@@ -38,13 +38,15 @@ def add_user(username: str, password: str, db: Session):
     return user
 
 
-def update_user(user_id: UUID, password: str, is_trainer: bool, db: Session):
-    user = get_db_user_by_id(user_id, db)
-    user.hashed_password = get_password_hash(password)
-    if is_trainer:
-        user.roles = [get_db_role(RoleName.trainer, db)]
-    else:
-        user.roles = [get_db_role(RoleName.user, db)]
+def update_user(user: DBUser, password: str, is_trainer: bool, db: Session):
+    if password:
+        user.hashed_password = get_password_hash(password)
+
+    if is_trainer is not None:
+        if is_trainer:
+            user.roles = [get_db_role(RoleName.trainer, db)]
+        else:
+            user.roles = [get_db_role(RoleName.user, db)]
 
     db.add(user)
     db.commit()
@@ -59,8 +61,3 @@ def delete_user(user_id: UUID, db: Session):
     db.delete(user)
     db.commit()
     return
-
-
-def is_owner_or_admin(user: DBUser, actor: DBUser, db: Session):
-    trainer_role = get_db_role(RoleName.trainer, db)
-    return user.id == actor.id or trainer_role in actor.roles

@@ -25,12 +25,19 @@ def new_user(client):
     response_data = response.json()
     token = response_data["access_token"]
 
-    yield {"token": token, "id": id}
+    yield {"username": username, "password": password, "token": token, "id": id}
 
     try:
         client.delete(f"/users/{id}", headers={"Authorization": f"Bearer {token}"})
     except:
         pass
+
+
+# Get User tests:
+#  - List all users
+#  - Get own user
+#  - Get other user
+#  - Get non-existent user
 
 
 def test_list_users(client, admin):
@@ -89,10 +96,16 @@ def test_get_user_not_found(client, admin):
     assert response_data["detail"] == "User not found"
 
 
+# Update User tests:
+#  - Update user as admin
+#  - Update user as user
+#  - Update password on own user
+
+
 def test_admin_update_user(client, admin, new_user):
-    response = client.post(
+    response = client.put(
         f"/users/{new_user['id']}",
-        data={"password": "new_password", "is_trainer": True},
+        json={"is_trainer": True},
         headers={"Authorization": f"Bearer {admin['token']}"},
     )
 
@@ -105,9 +118,9 @@ def test_admin_update_user(client, admin, new_user):
 
 
 def test_user_update_user(client, user, new_user):
-    response = client.post(
+    response = client.put(
         f"/users/{new_user['id']}",
-        data={"password": "new_password", "is_trainer": True},
+        json={"is_trainer": True},
         headers={"Authorization": f"Bearer {user['token']}"},
     )
 
@@ -115,6 +128,58 @@ def test_user_update_user(client, user, new_user):
     print(response_data)
 
     assert response.status_code == 403
+
+
+def test_update_password(client, new_user):
+    password = get_random_string(16)
+
+    response = client.put(
+        f"/users/{new_user['id']}",
+        json={"password": password},
+        headers={"Authorization": f"Bearer {new_user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": new_user["username"],
+            "password": new_user["password"],
+            "grant_type": "password",
+        },
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 401
+
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": new_user["username"],
+            "password": password,
+            "grant_type": "password",
+        },
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert "access_token" in response_data
+    assert response_data["token_type"] == "bearer"
+
+
+# Delete User tests:
+#  - Delete user as admin
+#  - Delete user as user
+#  - Delete non-existent user
+#  - Delete self
 
 
 def test_admin_delete_user(client, admin, new_user):
