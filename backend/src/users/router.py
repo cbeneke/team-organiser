@@ -65,7 +65,7 @@ async def router_update_user(
 ):
     if not is_admin_or_owner(actor, user, db):
         raise AccessDenied
-    
+
     # Return user without update if no update is requested
     if all_fields_are_none(update):
         return user

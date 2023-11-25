@@ -84,8 +84,14 @@ async def router_update_event(
     # Return event without update if no update is requested
     if all_fields_are_none(update):
         return event
-    
+
     event = update_event(
-        db, event, update.title, update.description, update.start_time, update.end_time, update.display_color
+        db,
+        event,
+        update.title,
+        update.description,
+        update.start_time,
+        update.end_time,
+        update.display_color,
     )
     return event

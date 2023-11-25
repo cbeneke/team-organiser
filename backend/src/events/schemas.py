@@ -13,12 +13,14 @@ class NewEvent(BaseModel):
     end_time: datetime
     display_color: str
 
+
 class UpdateEvent(BaseModel):
     title: Union[str, None] = None
     description: Union[str, None] = None
     start_time: Union[datetime, None] = None
     end_time: Union[datetime, None] = None
     display_color: Union[str, None] = None
+
 
 class ResponseEvent(NewEvent):
     id: UUID = Field(default_factory=uuid4)

@@ -32,11 +32,13 @@ def new_user(client):
     except:
         pass
 
+
 # Get User tests:
 #  - List all users
 #  - Get own user
 #  - Get other user
 #  - Get non-existent user
+
 
 def test_list_users(client, admin):
     response = client.get(
@@ -99,6 +101,7 @@ def test_get_user_not_found(client, admin):
 #  - Update user as user
 #  - Update password on own user
 
+
 def test_admin_update_user(client, admin, new_user):
     response = client.put(
         f"/users/{new_user['id']}",
@@ -133,9 +136,7 @@ def test_update_password(client, new_user):
     response = client.put(
         f"/users/{new_user['id']}",
         json={"password": password},
-        headers={
-            "Authorization": f"Bearer {new_user['token']}"
-        }
+        headers={"Authorization": f"Bearer {new_user['token']}"},
     )
 
     response_data = response.json()
@@ -145,7 +146,11 @@ def test_update_password(client, new_user):
 
     response = client.post(
         "/auth/login",
-        data={"username": new_user['username'], "password": new_user['password'], "grant_type": "password"},
+        data={
+            "username": new_user["username"],
+            "password": new_user["password"],
+            "grant_type": "password",
+        },
     )
 
     response_data = response.json()
@@ -155,7 +160,11 @@ def test_update_password(client, new_user):
 
     response = client.post(
         "/auth/login",
-        data={"username": new_user['username'], "password": password, "grant_type": "password"},
+        data={
+            "username": new_user["username"],
+            "password": password,
+            "grant_type": "password",
+        },
     )
 
     response_data = response.json()
@@ -165,11 +174,13 @@ def test_update_password(client, new_user):
     assert "access_token" in response_data
     assert response_data["token_type"] == "bearer"
 
+
 # Delete User tests:
 #  - Delete user as admin
 #  - Delete user as user
 #  - Delete non-existent user
 #  - Delete self
+
 
 def test_admin_delete_user(client, admin, new_user):
     response = client.delete(
