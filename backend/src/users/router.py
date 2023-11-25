@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends
 from typing import Annotated
 from sqlalchemy.orm import Session
 
 from src.database import get_db
 
-from src.users.schemas import ResponseUser
+from src.users.schemas import ResponseUser, UpdateUser
 from src.users.dependencies import (
     get_current_active_user,
     get_user,
@@ -47,23 +47,26 @@ async def router_delete_user(
     actor: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    if not is_owner_or_admin(user, actor, db):
+    if not is_owner_or_admin(actor, user, db):
         raise AccessDenied
+    
     delete_user(user.id, db)
     return {}
 
 
-@router.post("/{user_id}", response_model=ResponseUser)
+@router.put("/{user_id}", response_model=ResponseUser)
 async def router_update_user(
     user: Annotated[ResponseUser, Depends(get_user)],
-    password: Annotated[str, Form()],
-    is_trainer: Annotated[bool, Form()],
+    updateUser: UpdateUser,
     actor: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    if not is_owner_or_admin(user, actor, db):
+    if not is_owner_or_admin(actor, user, db):
         raise AccessDenied
+    
+    # Return user if no update is requested
+    if updateUser.password is None and updateUser.is_trainer is None:
+        return user
 
-    new_password = password if password else user.password
-    user = update_user(user.id, new_password, is_trainer, db)
+    user = update_user(user, updateUser.password, updateUser.is_trainer, db)
     return user

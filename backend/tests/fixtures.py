@@ -4,6 +4,7 @@ import pytest
 import sqlite3
 import string
 import random
+from datetime import datetime, timedelta
 from alembic.config import Config
 from alembic import command
 
@@ -101,11 +102,36 @@ def test_user(client):
     response_data = response.json()
     token = response_data["access_token"]
 
-    yield {'token': token, 'id': id}
+    yield {'username': username, 'password': password, 'token': token, 'id': id}
 
     client.delete(
         f"/users/{id}",
         headers={"Authorization": f"Bearer {token}"}
+    )
+
+@pytest.fixture(scope='function')
+def test_event(client, test_user):
+    title = get_random_string(16)
+    description = get_random_string(16)
+
+    response = client.post(
+        "/events/",
+        json={
+            "title": title,
+            "description": description,
+            "start_time": datetime.now().isoformat(),
+            "end_time": (datetime.now() + timedelta(hours=1)).isoformat()
+        },
+        headers={"Authorization": f"Bearer {test_user['token']}"}
+    )
+    print(response.json())
+    event = response.json()
+
+    yield event
+
+    client.delete(
+        f"/events/{event['id']}",
+        headers={"Authorization": f"Bearer {test_user['token']}"}
     )
 
 def get_random_string(length: int, hex: bool = False):

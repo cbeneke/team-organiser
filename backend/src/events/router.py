@@ -13,14 +13,14 @@ import src.events.utils as utils
 import src.users.dependencies as user_dependencies
 import src.users.exceptions as user_exceptions
 import src.users.schemas as user_schemas
-import src.users.utils as user_utils
+import src.users.service as user_service
 
 router = APIRouter()
 
 @router.get("/", response_model=list[schemas.ResponseEvent])
 async def get_events(
-    start_date: Optional[Annotated[date, Form()]] = None,
-    end_date: Optional[Annotated[date, Form()]] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
     user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
     db: Session = Depends(get_db),
 ):
@@ -52,6 +52,9 @@ async def router_delete_event(
     user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    if not user_service.is_owner_or_admin(user, event.owner, db):
+        raise user_exceptions.AccessDenied
+    
     db.delete(event)
     db.commit()
 
@@ -59,16 +62,15 @@ async def router_delete_event(
 
 @router.put("/{event_id}", response_model=schemas.ResponseEvent)
 async def router_update_event(
-    title: Optional[Annotated[str, Form()]] = None,
-    description: Optional[Annotated[str, Form()]] = None,
-    start_time: Optional[Annotated[datetime, Form()]] = None,
-    end_time: Optional[Annotated[datetime, Form()]] = None,
+    title: Optional[str] = None,
+    description: Optional[str] = None,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
     event: schemas.ResponseEvent = Depends(dependencies.get_event),
     user: user_schemas.ResponseUser = Depends(user_dependencies.get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    trainer_role = user_utils.get_db_role(user_schemas.RoleName.trainer, db)
-    if trainer_role not in user.roles and not event.owner == user:
+    if not user_service.is_owner_or_admin(user, event.owner, db):
         raise user_exceptions.AccessDenied
 
     event = service.update_event(db, event, title, description, start_time, end_time)

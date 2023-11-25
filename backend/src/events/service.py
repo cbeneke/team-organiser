@@ -69,6 +69,7 @@ def update_event(
     event.start_time = start_time if start_time else event.start_time
     event.end_time = end_time if end_time else event.end_time
 
+    db.add(event)
     db.commit()
     db.refresh(event)
 

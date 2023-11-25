@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, Path
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -27,7 +27,7 @@ async def get_all_users(
 
 
 async def get_user(
-    user_id: UUID,
+    user_id: Annotated[UUID, Path(title="User ID")],
     db: Session = Depends(get_db),
 ):
     user = get_db_user_by_id(user_id, db)

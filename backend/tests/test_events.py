@@ -1,10 +1,9 @@
-from .fixtures import admin, user, test_user, client, db
+from .fixtures import admin, user, test_event, test_user, client, db
 
 def test_list_events(client, user):
     response = client.get(
         "/events/",
         headers={
-            "content-type": "application/x-www-form-urlencoded",
             "Authorization": f"Bearer {user['token']}"
         }
     )
@@ -29,7 +28,6 @@ def test_create_event(client, user):
         }
     )
 
-    print(response)
     response_data = response.json()
     print(response_data)
 
@@ -39,28 +37,30 @@ def test_create_event(client, user):
     assert response_data["start_time"] == "2023-01-01T10:00:00"
     assert response_data["end_time"] == "2023-01-01T12:00:00"
 
-def test_get_user(client, admin):
-    response = client.get(
-        f"/users/{admin['id']}",
+def test_create_invalid_event(client, user):
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Test Event",
+            "description": "Test Description",
+            "start_time": "2023-01-01T12:00:00.000Z",
+            "end_time": "2023-01-01T10:00:00.000Z"
+        },
         headers={
-            "content-type": "application/x-www-form-urlencoded",
-            "Authorization": f"Bearer {admin['token']}"
+            "Authorization": f"Bearer {user['token']}"
         }
     )
 
     response_data = response.json()
     print(response_data)
 
-    assert response.status_code == 200
-    assert response_data["username"] == "admin"
-    assert response_data["is_active"] == True
-    assert response_data["roles"][0]["name"] == "trainer"
+    assert response.status_code == 400
+    assert response_data["detail"] == "Event Start Date must be before End Date"
 
 def test_get_event_not_found(client, admin):
     response = client.get(
-        "/users/00000000-0000-4000-8000-000000000000",
+        "/events/00000000-0000-4000-8000-000000000000",
         headers={
-            "content-type": "application/x-www-form-urlencoded",
             "Authorization": f"Bearer {admin['token']}"
         }
     )
@@ -69,43 +69,12 @@ def test_get_event_not_found(client, admin):
     print(response_data)
 
     assert response.status_code == 404
-    assert response_data["detail"] == "User not found"
+    assert response_data["detail"] == "Event not found"
 
-def test_admin_update_user(client, admin, test_user):
-    response = client.post(
-        f"/users/{test_user['id']}",
-        data={"password": "new_password", "is_trainer": True},
-        headers={
-            "content-type": "application/x-www-form-urlencoded",
-            "Authorization": f"Bearer {admin['token']}"
-        }
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 200
-    assert test_user["id"] == response_data["id"]
-    assert response_data["roles"][0]["name"] == "trainer"
-
-def test_user_update_user(client, user, test_user):
-    response = client.post(
-        f"/users/{test_user['id']}",
-        data={"password": "new_password", "is_trainer": True},
-        headers={
-            "content-type": "application/x-www-form-urlencoded",
-            "Authorization": f"Bearer {user['token']}"
-        }
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 403
-
-def test_admin_delete_user(client, admin, test_user):
-    response = client.delete(
-        f"/users/{test_user['id']}",
+def test_admin_update_event(client, admin, test_event):
+    response = client.put(
+        f"/events/{test_event['id']}",
+        params={"title": "New Title"},
         headers={
             "Authorization": f"Bearer {admin['token']}"
         }
@@ -115,10 +84,12 @@ def test_admin_delete_user(client, admin, test_user):
     print(response_data)
 
     assert response.status_code == 200
+    assert response_data["title"] == "New Title"
 
-def test_user_delete_user(client, user, test_user):
-    response = client.delete(
-        f"/users/{test_user['id']}",
+def test_user_update_event(client, user, test_event):
+    response = client.put(
+        f"/events/{test_event['id']}",
+        params={"title": "New Title"},
         headers={
             "Authorization": f"Bearer {user['token']}"
         }
@@ -129,9 +100,35 @@ def test_user_delete_user(client, user, test_user):
 
     assert response.status_code == 403
 
-def test_delete_user_not_found(client, admin):
+def test_admin_delete_event(client, admin, test_event):
     response = client.delete(
-        "/users/00000000-0000-4000-8000-000000000000",
+        f"/events/{test_event['id']}",
+        headers={
+            "Authorization": f"Bearer {admin['token']}"
+        }
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+def test_user_delete_event(client, user, test_event):
+    response = client.delete(
+        f"/events/{test_event['id']}",
+        headers={
+            "Authorization": f"Bearer {user['token']}"
+        }
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 403
+
+def test_delete_event_not_found(client, admin):
+    response = client.delete(
+        "/events/00000000-0000-4000-8000-000000000000",
         headers={
             "Authorization": f"Bearer {admin['token']}"
         }
@@ -141,17 +138,4 @@ def test_delete_user_not_found(client, admin):
     print(response_data)
 
     assert response.status_code == 404
-    assert response_data["detail"] == "User not found"
-
-def test_delete_self(client, test_user):
-    response = client.delete(
-        f"/users/{test_user['id']}",
-        headers={
-            "Authorization": f"Bearer {test_user['token']}"
-        }
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 200
+    assert response_data["detail"] == "Event not found"
