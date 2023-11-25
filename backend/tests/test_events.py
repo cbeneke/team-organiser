@@ -182,7 +182,7 @@ def test_get_event_not_found(client, user):
 def test_admin_update_event(client, admin, new_event):
     response = client.put(
         f"/events/{new_event['id']}",
-        params={
+        json={
             "title": "Other Event",
         },
         headers={"Authorization": f"Bearer {admin['token']}"},
@@ -215,7 +215,7 @@ def test_user_update_own_event(client, user):
 
     response = client.put(
         f"/events/{event['id']}",
-        params={
+        json={
             "title": "Other Event",
         },
         headers={"Authorization": f"Bearer {user['token']}"},
@@ -241,7 +241,9 @@ def test_user_update_own_event(client, user):
 def test_user_update_event(client, user, new_event):
     response = client.put(
         f"/events/{new_event['id']}",
-        data={},
+        json={
+            "title": "Other Event",
+        },
         headers={"Authorization": f"Bearer {user['token']}"},
     )
 
