@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, Form, status
 from typing import Annotated, Optional
 from sqlalchemy.orm import Session
-from datetime import date, datetime
+from datetime import date
 
 from src.database import get_db
+from src.utils import all_fields_are_none
 
 from src.events.models import DBEvents
-from src.events.schemas import ResponseEvent, NewEvent
+from src.events.schemas import ResponseEvent, NewEvent, UpdateEvent
 from src.events.dependencies import get_event
 from src.events.service import add_event, update_event
 from src.events.utils import parse_timerange
@@ -72,11 +73,7 @@ async def router_delete_event(
 
 @router.put("/{event_id}", response_model=ResponseEvent)
 async def router_update_event(
-    title: Optional[Annotated[str, Form()]] = None,
-    description: Optional[Annotated[str, Form()]] = None,
-    start_time: Optional[Annotated[datetime, Form()]] = None,
-    end_time: Optional[Annotated[datetime, Form()]] = None,
-    display_color: Optional[Annotated[str, Form()]] = None,
+    update: UpdateEvent,
     db: Session = Depends(get_db),
     event: ResponseEvent = Depends(get_event),
     user: DBUser = Depends(get_current_active_user),
@@ -84,7 +81,11 @@ async def router_update_event(
     if not is_admin_or_owner(user, event.owner, db):
         raise AccessDenied
 
+    # Return event without update if no update is requested
+    if all_fields_are_none(update):
+        return event
+    
     event = update_event(
-        db, event, title, description, start_time, end_time, display_color
+        db, event, update.title, update.description, update.start_time, update.end_time, update.display_color
     )
     return event

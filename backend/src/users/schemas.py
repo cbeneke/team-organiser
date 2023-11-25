@@ -25,6 +25,9 @@ class BaseUser(BaseModel):
 class NewUser(BaseUser):
     password: str
 
+class UpdateUser(BaseModel):
+    password: Union[str, None] = None
+    is_trainer: Union[bool, None] = None
 
 class ResponseUser(BaseUser):
     id: UUID = Field(default_factory=uuid4)
