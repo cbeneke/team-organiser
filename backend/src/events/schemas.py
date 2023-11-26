@@ -32,6 +32,7 @@ class ResponseType(str, Enum):
     declined = "declined"
     pending = "pending"
 
+
 class Response(BaseModel):
     user: ResponseUser
     status: ResponseType

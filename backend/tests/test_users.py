@@ -5,6 +5,7 @@ from .utils import get_random_string
 
 from .test_events import new_event
 
+
 @pytest.fixture(scope="function")
 def new_user(client):
     username = get_random_string(16)
@@ -230,11 +231,13 @@ def test_delete_self(client, new_user):
 
     assert response.status_code == 200
 
+
 # User Event tests:
 #  - List Events of user
 #  - List Events of other user
 #  - List Events of non-existent user
 #  - List Events of other user as admin
+
 
 def test_list_events(client, user, new_event):
     response = client.get(
@@ -249,6 +252,7 @@ def test_list_events(client, user, new_event):
     assert len(response_data) == 1
     assert response_data[0]["event"]["id"] == new_event["id"]
 
+
 def test_list_events(client, user, new_user, new_event):
     response = client.get(
         f"/users/{new_user['id']}/events/",
@@ -259,6 +263,7 @@ def test_list_events(client, user, new_user, new_event):
     print(response_data)
 
     assert response.status_code == 403
+
 
 def test_list_events(client, user, new_user, new_event):
     response = client.get(

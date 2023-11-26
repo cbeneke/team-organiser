@@ -76,6 +76,7 @@ async def router_update_user(
     user = update_user(user, update.password, update.is_trainer, db)
     return user
 
+
 @router.get("/{user_id}/events", response_model=list[EventResponse])
 async def router_update_user(
     user: Annotated[ResponseUser, Depends(get_user)],
