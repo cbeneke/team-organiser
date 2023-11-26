@@ -4,7 +4,12 @@ from .fixtures import admin, user, client, db
 
 
 @pytest.fixture(scope="function")
-def new_event(admin, client):
+def new_event(admin, user, client):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
+    )
+    user_object = response.json()
+
     response = client.post(
         "/events/",
         json={
@@ -13,6 +18,7 @@ def new_event(admin, client):
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
+            "invitees": [user_object],
         },
         headers={
             "content-type": "application/json",
@@ -192,7 +198,7 @@ def test_admin_update_event(client, admin, new_event):
     print(response_data)
 
     assert response.status_code == 200
-    assert new_event["id"] == response_data["id"]
+    assert response_data["id"] == new_event["id"]
     assert response_data["title"] == "Other Event"
 
 
@@ -225,7 +231,7 @@ def test_user_update_own_event(client, user):
     print(response_data)
 
     assert response.status_code == 200
-    assert event["id"] == response_data["id"]
+    assert response_data["id"] == event["id"]
     assert response_data["title"] == "Other Event"
     assert response_data["description"] == "Test Description"
 
@@ -337,3 +343,72 @@ def test_delete_event_not_found(client, admin):
 
     assert response.status_code == 404
     assert response_data["detail"] == "Event not found"
+
+
+# Test Event Responses
+#  - List event responses
+#  - Update event responses as admin
+
+
+def test_get_event_responses(client, admin, new_event):
+    response = client.get(
+        f"/events/{new_event['id']}/responses",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 2  # Test Event has admin and user invites
+    assert response_data[0]["user"]["id"] == admin["id"]
+    assert response_data[0]["status"] == "accepted"
+    assert response_data[1]["status"] == "pending"
+
+
+def test_admin_update_event_responses(client, admin, new_event):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
+    admin_user = response.json()
+
+    response = client.put(
+        f"/events/{new_event['id']}/responses",
+        json=[{"user": admin_user, "status": "accepted"}],
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 1
+    assert response_data[0]["user"]["id"] == admin_user["id"]
+    assert response_data[0]["status"] == "accepted"
+
+
+def test_user_decline_event(client, user, new_event):
+    response = client.put(
+        f"/events/{new_event['id']}/responses/{user['id']}",
+        params={"status": "declined"},
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert response_data["user"]["id"] == user["id"]
+    assert response_data["status"] == "declined"
+
+    response = client.get(
+        f"/events/{new_event['id']}/responses",
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 2  # Test Event has admin and user invites
+    assert response_data[1]["user"]["id"] == user["id"]
+    assert response_data[1]["status"] == "declined"

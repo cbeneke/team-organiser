@@ -2,11 +2,18 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from src.events.models import DBEvents
-from src.events.schemas import ResponseEvent, NewEvent
+from src.events.models import DBEvents, DBEventResponses
+from src.events.schemas import (
+    ResponseEvent,
+    NewEvent,
+    Response,
+    ResponseType,
+)
 from src.events.exceptions import EventDatesInvalid
 
 from src.users.models import DBUser
+from src.users.schemas import ResponseUser
+from src.users.service import get_db_user_by_id
 
 
 def add_event(
@@ -59,8 +66,36 @@ def update_event(
 def get_events(db: Session, start_time: datetime, end_time: datetime) -> ResponseEvent:
     return (
         db.query(DBEvents)
-        .filter(DBEvents.start_time <= end_time)
-        .filter(DBEvents.end_time >= start_time)
+        .filter(DBEvents.start_time <= end_time, DBEvents.end_time >= start_time)
         .order_by(DBEvents.start_time)
         .all()
     )
+
+
+def construct_responses_from_invitees(
+    owner: ResponseUser, invitees: list[ResponseUser]
+) -> list[Response]:
+    responses = []
+    responses.append(Response(user=owner, status=ResponseType.accepted))
+
+    for invitee in invitees:
+        if invitee == owner:
+            continue
+        responses.append(Response(user=invitee, status=ResponseType.pending))
+
+    return responses
+
+
+def set_responses(db: Session, event: ResponseEvent, responses: list[Response]):
+    db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
+
+    for response in responses:
+        user = get_db_user_by_id(response.user.id, db)
+        db_response = DBEventResponses(
+            event=event,
+            user=user,
+            status=response.status,
+        )
+        db.add(db_response)
+
+    db.commit()

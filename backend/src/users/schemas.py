@@ -3,7 +3,6 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, constr
 from typing import Union
 
-
 class RoleName(str, Enum):
     trainer = "trainer"
     user = "user"
