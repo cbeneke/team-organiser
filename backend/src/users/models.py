@@ -34,3 +34,4 @@ class DBUser(Base):
     is_active = sql.Column(sql.Boolean, default=True)
 
     roles: Mapped[list[DBRoles]] = relationship("DBRoles", secondary=user_to_role)
+    events = relationship("DBEventResponses", back_populates="user")

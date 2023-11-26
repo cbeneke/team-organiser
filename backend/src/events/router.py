@@ -1,21 +1,32 @@
 from fastapi import APIRouter, Depends, Form, status
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Union
 from sqlalchemy.orm import Session
 from datetime import date
 
 from src.database import get_db
 from src.utils import all_fields_are_none
 
-from src.events.models import DBEvents
-from src.events.schemas import ResponseEvent, NewEvent, UpdateEvent
+from src.events.models import DBEvents, DBEventResponses
+from src.events.schemas import (
+    ResponseEvent,
+    NewEvent,
+    UpdateEvent,
+    ResponseType,
+    Response,
+)
 from src.events.dependencies import get_event
-from src.events.service import add_event, update_event
+from src.events.service import (
+    add_event,
+    update_event,
+    set_responses,
+    construct_responses_from_invitees,
+)
 from src.events.utils import parse_timerange
 
-from src.users.dependencies import get_current_active_user
+from src.users.dependencies import get_current_active_user, get_user
 from src.users.exceptions import AccessDenied
-from src.users.models import DBUser
-from src.users.utils import is_admin_or_owner
+from src.users.schemas import ResponseUser
+from src.users.utils import is_admin_or_self
 
 router = APIRouter()
 
@@ -24,7 +35,7 @@ router = APIRouter()
 async def router_get_events(
     start_date: Optional[Annotated[date, Form()]] = None,
     end_date: Optional[Annotated[date, Form()]] = None,
-    user: DBUser = Depends(get_current_active_user),
+    user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     start_time, end_time = parse_timerange(start_date, end_date)
@@ -41,16 +52,21 @@ async def router_get_events(
 @router.post("/", response_model=ResponseEvent, status_code=status.HTTP_201_CREATED)
 async def router_add_event(
     event: NewEvent,
-    user: DBUser = Depends(get_current_active_user),
+    user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    invitees = event.invitees
     event = add_event(event, user, db)
+
+    responses = construct_responses_from_invitees(user, invitees)
+    set_responses(db, event, responses)
+
     return event
 
 
 @router.get("/{event_id}", response_model=ResponseEvent)
 async def router_get_event(
-    user: DBUser = Depends(get_current_active_user),
+    user: ResponseUser = Depends(get_current_active_user),
     event: ResponseEvent = Depends(get_event),
 ):
     return event
@@ -58,11 +74,11 @@ async def router_get_event(
 
 @router.delete("/{event_id}")
 async def router_delete_event(
-    user: DBUser = Depends(get_current_active_user),
+    user: ResponseUser = Depends(get_current_active_user),
     event: ResponseEvent = Depends(get_event),
     db: Session = Depends(get_db),
 ):
-    if not is_admin_or_owner(user, event.owner, db):
+    if not is_admin_or_self(user, event.owner, db):
         raise AccessDenied
 
     db.delete(event)
@@ -76,9 +92,9 @@ async def router_update_event(
     update: UpdateEvent,
     db: Session = Depends(get_db),
     event: ResponseEvent = Depends(get_event),
-    user: DBUser = Depends(get_current_active_user),
+    user: ResponseUser = Depends(get_current_active_user),
 ):
-    if not is_admin_or_owner(user, event.owner, db):
+    if not is_admin_or_self(user, event.owner, db):
         raise AccessDenied
 
     # Return event without update if no update is requested
@@ -94,4 +110,58 @@ async def router_update_event(
         update.end_time,
         update.display_color,
     )
+    if update.responses:
+        set_responses(db, event, update.responses)
+
     return event
+
+
+@router.get("/{event_id}/responses/", response_model=list[Response])
+async def router_list_event_responses(
+    db: Session = Depends(get_db),
+    event: ResponseEvent = Depends(get_event),
+    actor: ResponseUser = Depends(get_current_active_user),
+):
+    responses = db.query(DBEventResponses).filter(DBEventResponses.event == event).all()
+
+    return responses
+
+
+@router.put("/{event_id}/responses/", response_model=list[Response])
+async def router_list_event_responses(
+    responses: list[Response],
+    db: Session = Depends(get_db),
+    event: ResponseEvent = Depends(get_event),
+    actor: ResponseUser = Depends(get_current_active_user),
+):
+    if not is_admin_or_self(actor, event.owner, db):
+        raise AccessDenied
+
+    set_responses(db, event, responses)
+
+    return responses
+
+
+@router.put("/{event_id}/responses/{user_id}", response_model=Union[Response, None])
+async def router_set_event_response(
+    status: ResponseType,
+    db: Session = Depends(get_db),
+    event: ResponseEvent = Depends(get_event),
+    user: ResponseUser = Depends(get_user),
+    actor: ResponseUser = Depends(get_current_active_user),
+):
+    if not (user == actor or is_admin_or_self(actor, event.owner, db)):
+        raise AccessDenied
+
+    response = (
+        db.query(DBEventResponses)
+        .filter(DBEventResponses.event == event, DBEventResponses.user == user)
+        .first()
+    )
+    if response:
+        response.status = status
+
+        db.commit()
+        db.refresh(response)
+
+    return response

@@ -19,7 +19,7 @@ def get_db_user(username: str, db: Session):
 
 
 def get_db_user_by_id(user_id: UUID, db: Session):
-    return db.query(DBUser).filter(DBUser.id == user_id).first()
+    return db.query(DBUser).get(user_id)
 
 
 def get_all_db_users(db: Session):
@@ -30,6 +30,9 @@ def get_db_role(rolename: str, db: Session):
     return db.query(DBRoles).filter(DBRoles.name == rolename).first()
 
 
-def is_admin_or_owner(actor: DBUser, owner: DBUser, db: Session):
+def is_admin_or_self(actor: DBUser, user: DBUser, db: Session):
+    if actor.id == user.id:
+        return True
+
     trainer_role = get_db_role(RoleName.trainer, db)
-    return owner.id == actor.id or trainer_role in actor.roles
+    return trainer_role in actor.roles
