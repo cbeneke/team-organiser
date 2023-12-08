@@ -1,102 +1,77 @@
-import React, {useState, useMemo, useCallback} from 'react';
-import {StyleSheet, Text, View, TextStyle} from 'react-native';
-import {CalendarList, DateData} from 'react-native-calendars';
+import React, {useRef, useCallback} from 'react';
+import {StyleSheet} from 'react-native';
+import {ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar} from 'react-native-calendars';
+
 import testIDs from '../testIDs';
+import AgendaItem from '../components/agendaItem';
+import {agendaItems, getMarkedDates} from '../mocks/calendar';
 
-const RANGE = 24;
-// Get the current date in yyyy-mm-dd format
-// https://www.freecodecamp.org/news/javascript-get-current-date-todays-date-in-js/
-const today = new Date().toJSON().slice(0, 10);
+const leftArrowIcon = require('../assets/previous.png');
+const rightArrowIcon = require('../assets/next.png');
+const ITEMS: any[] = agendaItems;
 
-const Calendar = () => {
-  const horizontalView = true;
-  const [selected, setSelected] = useState(today);
-  const marked = useMemo(() => {
-    return {
-      [selected]: {
-        selected: true,
-        disableTouchEvent: true,
-        selectedColor: '#5E60CE',
-        selectedTextColor: 'white'
-      }
-    };
-  }, [selected]);
+interface Props {
+  weekView?: boolean;
+}
 
-  const onDayPress = useCallback((day: DateData) => {
-    setSelected(day.dateString);
+const Calendar = (props: Props) => {
+  const {weekView} = props;
+  const marked = useRef(getMarkedDates());
+
+  const onMonthChange = useCallback(({dateString}) => {
+    console.log('ExpandableCalendarScreen onMonthChange: ', dateString);
+  }, []);
+
+  const renderItem = useCallback(({item}: any) => {
+    return <AgendaItem item={item}/>;
   }, []);
 
   return (
-    <CalendarList
-      testID={testIDs.calendar.CONTAINER}
-      current={today}
-      pastScrollRange={RANGE}
-      futureScrollRange={RANGE}
-      onDayPress={onDayPress}
-      markedDates={marked}
-      renderHeader={!horizontalView ? renderCustomHeader : undefined}
-      calendarHeight={!horizontalView ? 390 : undefined}
-      theme={!horizontalView ? theme : undefined}
-      horizontal={horizontalView}
-      pagingEnabled={horizontalView}
-      staticHeader={horizontalView}
-    />
+    <CalendarProvider
+      date={ITEMS[1]?.title}
+      onMonthChange={onMonthChange}
+    >
+      {weekView ? (
+        <WeekCalendar
+          testID={testIDs.weekCalendar.CONTAINER}
+          firstDay={1}
+          markedDates={marked.current}
+        />
+      ) : (
+        <ExpandableCalendar
+          testID={testIDs.calendar.CONTAINER}
+          initialPosition={ExpandableCalendar.positions.OPEN}
+          calendarStyle={styles.calendar}
+          firstDay={1}
+          markedDates={marked.current}
+          leftArrowImageSource={leftArrowIcon}
+          rightArrowImageSource={rightArrowIcon}
+          animateScroll
+        />
+      )}
+      <AgendaList
+        sections={ITEMS}
+        renderItem={renderItem}
+        scrollToNextEvent
+        sectionStyle={styles.section}
+      />
+    </CalendarProvider>
   );
 };
-
-const theme = {
-  stylesheet: {
-    calendar: {
-      header: {
-        dayHeader: {
-          fontWeight: '600',
-          color: '#48BFE3'
-        }
-      }
-    }
-  },
-  'stylesheet.day.basic': {
-    todayText: {
-      color: '#5390D9',
-      fontWeight: '800'
-    }
-  }
-};
-
-function renderCustomHeader(date: any) {
-  const header = date.toString('MMMM yyyy');
-  const [month, year] = header.split(' ');
-  const textStyle: TextStyle = {
-    fontSize: 18,
-    fontWeight: 'bold',
-    paddingTop: 10,
-    paddingBottom: 10,
-    color: '#5E60CE',
-    paddingRight: 5
-  };
-
-  return (
-    <View style={styles.header}>
-      <Text style={[styles.month, textStyle]}>{`${month}`}</Text>
-      <Text style={[styles.year, textStyle]}>{year}</Text>
-    </View>
-  );
-}
 
 export default Calendar;
 
 const styles = StyleSheet.create({
+  calendar: {
+    paddingLeft: 20,
+    paddingRight: 20
+  },
   header: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    marginBottom: 10
+    backgroundColor: 'lightgrey'
   },
-  month: {
-    marginLeft: 5
-  },
-  year: {
-    marginRight: 5
+  section: {
+    backgroundColor: '#f2f7f7',
+    color: 'grey',
+    textTransform: 'capitalize'
   }
 });
