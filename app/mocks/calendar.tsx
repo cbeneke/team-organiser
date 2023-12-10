@@ -1,122 +1,78 @@
-import isEmpty from 'lodash/isEmpty';
-
-const today = new Date().toISOString().split('T')[0];
-const fastDate = getPastDate(3);
-const futureDates = getFutureDates(12);
-const dates = [fastDate, today].concat(futureDates);
-
-function getFutureDates(numberOfDays: number) {
-    const array: string[] = [];
-    for (let index = 1; index <= numberOfDays; index++) {
-        let d = Date.now();
-        if (index > 8) {
-            // set dates on the next month
-            const newMonth = new Date(d).getMonth() + 1;
-            d = new Date(d).setMonth(newMonth);
-        }
-        const date = new Date(d + 864e5 * index); // 864e5 == 86400000 == 24*60*60*1000
-        const dateString = date.toISOString().split('T')[0];
-        array.push(dateString);
-    }
-    return array;
-  }
-  
-function getPastDate(numberOfDays: number) {
-    return new Date(Date.now() - 864e5 * numberOfDays).toISOString().split('T')[0];
-}
-
-export const agendaItems = [
+export const mockResponses = [
     {
-        title: dates[0],
-        data: [{hour: '12am', duration: '1h', title: 'First Yoga'}]
+        user: {
+            id: 'd0f7d07c-88a6-449d-afab-78343c19227c',
+            username: 'lisa',
+            firstname: 'Lisa',
+        },
+        status: 'accepted'
     },
     {
-        title: dates[1],
-        data: [
-            {hour: '4pm', duration: '1h', title: 'Pilates ABC'},
-            {hour: '5pm', duration: '1h', title: 'Vinyasa Yoga'}
-        ]
+        user: {
+            id: '7c813ca2-a895-4349-a36f-a4317cee6dcf',
+            username: 'helen',
+            firstname: 'Helen',
+        },
+        status: 'declined'
     },
     {
-        title: dates[2],
-        data: [
-            {hour: '1pm', duration: '1h', title: 'Ashtanga Yoga'},
-            {hour: '2pm', duration: '1h', title: 'Deep Stretches'},
-            {hour: '3pm', duration: '1h', title: 'Private Yoga'}
-        ]
-    },
-    {
-        title: dates[3],
-        data: [{hour: '12am', duration: '1h', title: 'Ashtanga Yoga'}]
-    },
-    {
-        title: dates[5],
-        data: [
-            {hour: '9pm', duration: '1h', title: 'Middle Yoga'},
-            {hour: '10pm', duration: '1h', title: 'Ashtanga'},
-            {hour: '11pm', duration: '1h', title: 'TRX'},
-            {hour: '12pm', duration: '1h', title: 'Running Group'}
-        ]
-    },
-    {
-        title: dates[6], 
-        data: [
-            {hour: '12am', duration: '1h', title: 'Ashtanga Yoga'}
-        ]
-    },
-    {
-        title: dates[8],
-        data: [
-            {hour: '9pm', duration: '1h', title: 'Pilates Reformer'},
-            {hour: '10pm', duration: '1h', title: 'Ashtanga'},
-            {hour: '11pm', duration: '1h', title: 'TRX'},
-            {hour: '12pm', duration: '1h', title: 'Running Group'}
-        ]
-    },
-    {
-        title: dates[9],
-        data: [
-            {hour: '1pm', duration: '1h', title: 'Ashtanga Yoga'},
-            {hour: '2pm', duration: '1h', title: 'Deep Stretches'},
-            {hour: '3pm', duration: '1h', title: 'Private Yoga'}
-        ]
-    },
-    {
-        title: dates[10], 
-        data: [
-            {hour: '12am', duration: '1h', title: 'Last Yoga'}
-        ]
-    },
-    {
-        title: dates[11],
-        data: [
-            {hour: '1pm', duration: '1h', title: 'Ashtanga Yoga'},
-            {hour: '2pm', duration: '1h', title: 'Deep Stretches'},
-            {hour: '3pm', duration: '1h', title: 'Private Yoga'}
-        ]
-    },
-    {
-        title: dates[12], 
-        data: [
-            {hour: '12am', duration: '1h', title: 'Last Yoga'}
-        ]
-    },
-    {
-        title: dates[13], 
-        data: [
-            {hour: '12am', duration: '1h', title: 'Last Yoga'}
-        ]
+        user: {
+            id: 'a8962fc5-b1b4-4ac5-b1e4-c7665efcf931',
+            username: 'maurice',
+            firstname: 'Maurice',
+        },
+        status: 'pending'
     }
 ];
 
-export function getMarkedDates() {
-    let marked = {}
-  
-    agendaItems.forEach(item => {
-      // NOTE: only mark dates with data
-      if (item.data && item.data.length > 0 && !isEmpty(item.data[0])) {
-        marked[item.title] = {marked: true};
-      }
-    });
-    return marked;
-  }
+export const mockEvents = [
+    {
+        startTime: '2023-12-10T20:00:00.000Z',
+        endTime: '2020-12-10T22:00:00.000Z',
+        title: 'Training',
+        description: 'Regular training',
+        responses: mockResponses
+    },
+    {
+        startTime: '2023-12-12T19:00:00.000Z',
+        endTime: '2020-12-12T21:00:00.000Z',
+        title: 'Training',
+        description: 'Regular training',
+        responses: mockResponses
+    },
+    {
+        startTime: '2023-12-16T18:00:00.000Z',
+        endTime: '2020-12-16T21:00:00.000Z',
+        title: 'Training',
+        description: 'Regular training',
+        responses: mockResponses
+    },
+    {
+        startTime: '2023-12-17T20:00:00.000Z',
+        endTime: '2020-12-17T22:00:00.000Z',
+        title: 'Training',
+        description: 'Regular training',
+        responses: mockResponses
+    },
+    {
+        startTime: '2023-12-19T19:00:00.000Z',
+        endTime: '2020-12-19T21:00:00.000Z',
+        title: 'Training',
+        description: 'Regular training',
+        responses: mockResponses
+    },
+    {
+        startTime: '2023-12-20T18:00:00.000Z',
+        endTime: '2020-12-24T21:00:00.000Z',
+        title: 'Christmas Market',
+        description: 'Christmas Market in the city center',
+        responses: mockResponses
+    },
+    {
+        startTime: '2023-12-23T18:00:00.000Z',
+        endTime: '2020-12-23T21:00:00.000Z',
+        title: 'Training',
+        description: 'Regular training',
+        responses: mockResponses
+    },
+]
