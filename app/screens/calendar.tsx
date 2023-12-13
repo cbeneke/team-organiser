@@ -1,47 +1,19 @@
-import React, {useRef, useCallback, useState, useEffect} from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useRef, useCallback, useState} from 'react';
+import {StyleSheet, View, Modal} from 'react-native';
 import {ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar} from 'react-native-calendars';
 
 import testIDs from '../testIDs';
 import AgendaItem from '../components/agendaItem';
 import {getTheme, lightThemeColor, themeColor} from '../components/theme';
-import {mockEvents} from '../mocks/calendar';
+import {getEvents, getEvent} from '../mocks/calendar';
+import {Event, AgendaSection} from '../types';
+import EventModal from '../components/eventModal';
 
 const leftArrowIcon = require('../assets/previous.png');
 const rightArrowIcon = require('../assets/next.png');
 
 interface Props {
   weekView?: boolean;
-}
-
-interface User {
-    id: string;
-    username: string;
-    firstname: string;
-}
-
-interface EventResponse {
-    user: User;
-    status: string;
-}
-
-interface Event {
-    startTime: string;
-    endTime: string;
-    title: string;
-    description: string;
-    responses: EventResponse[];
-}
-
-interface AgendaEvent {
-    hour: string;
-    duration: string;
-    title: string;
-}
-
-interface AgendaSection {
-    title: string;
-    data: AgendaEvent[];
 }
 
 function extractDate(date?: string) {
@@ -65,9 +37,11 @@ function getAgendaItems(events: Event[]) {
     // TODO: Make this more flexible (e.g. minutes in the events)
     const dateString = extractDate(event.startTime);
     const startHour = extractHour(event.startTime);
+    // TODO: This does not work if the event spans multiple days
     const duration = extractHour(event.endTime) - startHour;
 
     const eventData = {
+      id: event.id,
       hour: startHour + ":00",
       duration: duration + "h",
       title: event.title,
@@ -118,16 +92,14 @@ function unmarkSelectedDay(marked: object, day: string) {
 
 const Calendar = (props: Props) => {
   const {weekView} = props;
-  const events = useRef(getAgendaItems(mockEvents));
-  const markedDays = useRef(getEventDates(events.current));
+  const events = useRef(getEvents());
+  const agenda = useRef(getAgendaItems(events.current));
+  const markedDays = useRef(getEventDates(agenda.current));
   const previousDay = useRef(extractDate());
   const theme = useRef(getTheme());
   const todayBtnTheme = useRef({
     todayButtonTextColor: themeColor
   });
-
-  // const onMonthChange = useCallback(({dateString}) => {
-  // }, []);
 
   const onDateChanged = useCallback((dateString: string) => {
     unmarkSelectedDay(markedDays.current, previousDay.current);
@@ -136,43 +108,67 @@ const Calendar = (props: Props) => {
 
   }, [markedDays]);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const modalProps = useRef({
+    setVisible: setModalVisible,
+    event: undefined,
+  })
+
   const renderItem = useCallback(({item}: any) => {
-    return <AgendaItem item={item}/>;
+    function openEventModal(id: string) {
+      return () => {
+        modalProps.current.event = getEvent(id);
+        setModalVisible(true);
+      }
+    }
+    return <AgendaItem item={item} onPress={openEventModal(item.id)}/>;
   }, []);
 
   return (
-    <CalendarProvider
-      date={extractDate()}
-      theme={todayBtnTheme.current}
-      // onMonthChange={onMonthChange}
-      onDateChanged={onDateChanged}
-    >
-      {weekView ? (
-        <WeekCalendar
-          testID={testIDs.weekCalendar.CONTAINER}
-          firstDay={1}
-          markedDates={markedDays.current}
+    <View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+        >
+        {EventModal(modalProps.current)}
+      </Modal>
+      <CalendarProvider
+        date={extractDate()}
+        theme={todayBtnTheme.current}
+        onDateChanged={onDateChanged}
+      >
+        {weekView ? (
+          <WeekCalendar
+            testID={testIDs.weekCalendar.CONTAINER}
+            firstDay={1}
+            markedDates={markedDays.current}
+          />
+        ) : (
+          <ExpandableCalendar
+            testID={testIDs.calendar.CONTAINER}
+            initialPosition={ExpandableCalendar.positions.OPEN}
+            calendarStyle={styles.calendar}
+            theme={theme.current}
+            firstDay={1}
+            markedDates={markedDays.current}
+            leftArrowImageSource={leftArrowIcon}
+            rightArrowImageSource={rightArrowIcon}
+            animateScroll
+          />
+        )}
+        <AgendaList
+          sections={agenda.current}
+          renderItem={renderItem}
+          scrollToNextEvent
+          sectionStyle={styles.section}
+          avoidDateUpdates
         />
-      ) : (
-        <ExpandableCalendar
-          testID={testIDs.calendar.CONTAINER}
-          initialPosition={ExpandableCalendar.positions.OPEN}
-          calendarStyle={styles.calendar}
-          theme={theme.current}
-          firstDay={1}
-          markedDates={markedDays.current}
-          leftArrowImageSource={leftArrowIcon}
-          rightArrowImageSource={rightArrowIcon}
-          animateScroll
-        />
-      )}
-      <AgendaList
-        sections={events.current}
-        renderItem={renderItem}
-        scrollToNextEvent
-        sectionStyle={styles.section}
-      />
-    </CalendarProvider>
+      </CalendarProvider>
+    </View>
   );
 };
 

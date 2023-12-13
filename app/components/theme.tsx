@@ -4,6 +4,9 @@ export const themeColor = '#00AAAF';
 export const lightThemeColor = '#f2f7f7';
 export const disabledColor = 'grey';
 
+export const successThemeColor = 'green';
+export const failureThemeColor = 'red';
+
 export function getTheme() {
   return {
     // arrows

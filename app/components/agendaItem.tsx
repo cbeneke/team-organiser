@@ -1,32 +1,25 @@
-import React, {useCallback} from 'react';
-import {StyleSheet, Alert, View, Text, TouchableOpacity, Button} from 'react-native';
+import React from 'react';
+import {StyleSheet, View, Text, TouchableOpacity, Button} from 'react-native';
 import testIDs from '../testIDs';
 
 
 interface ItemProps {
   item: any;
+  onPress?: () => void;
 }
 
 const AgendaItem = (props: ItemProps) => {
-  const {item} = props;
-
-  const buttonPressed = useCallback(() => {
-    Alert.alert('Show me more');
-  }, []);
-
-  const itemPressed = useCallback(() => {
-    Alert.alert(item.title);
-  }, []);
+  const {item, onPress} = props;
 
   return (
-    <TouchableOpacity onPress={itemPressed} style={styles.item} testID={testIDs.agenda.ITEM}>
+    <TouchableOpacity onPress={onPress} style={styles.item} testID={testIDs.agenda.ITEM}>
       <View>
         <Text style={styles.itemHourText}>{item.hour}</Text>
         <Text style={styles.itemDurationText}>{item.duration}</Text>
       </View>
       <Text style={styles.itemTitleText}>{item.title}</Text>
       <View style={styles.itemButtonContainer}>
-        <Button color={'grey'} title={'Info'} onPress={buttonPressed}/>
+        <Button color={'grey'} title={'Info'} onPress={onPress}/>
       </View>
     </TouchableOpacity>
   );
