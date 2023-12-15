@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import fontawesome from '@fortawesome/fontawesome'
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
@@ -8,6 +8,7 @@ import {faCircleXmark} from '@fortawesome/free-regular-svg-icons';
 
 import {successThemeColor, failureThemeColor, lightThemeColor, themeColor} from './theme';
 import {Event} from '../types';
+import {getMeUser} from '../mocks/user';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
@@ -19,6 +20,7 @@ interface EventModalProps {
 const EventModal = (props: EventModalProps) => {
     const {event, setVisible} = props;
     const [currentResponse, setCurrentResponse] = useState('pending');
+    const currentUserIndex = event?.responses?.findIndex(response => response.user.id == getMeUser().id);
 
     const closeModal = () => {
         setVisible(false);
@@ -27,6 +29,9 @@ const EventModal = (props: EventModalProps) => {
     const updateResponse = (status: string) => {
         // TODO: async API call to update response on backend
         setCurrentResponse(status);
+        if (currentUserIndex != undefined) {
+            event.responses[currentUserIndex].status = status;
+        }
     }
 
     const renderResponses = () => {
