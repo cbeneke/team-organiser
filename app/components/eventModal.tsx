@@ -5,10 +5,10 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faQuestionCircle, faCheckCircle} from '@fortawesome/fontawesome-free-regular';
 import {faCircleXmark} from '@fortawesome/free-regular-svg-icons';
 
-
 import {successThemeColor, failureThemeColor, lightThemeColor, themeColor} from './theme';
 import {Event} from '../types';
 import {getMeUser} from '../mocks/user';
+import getStrings from '../locales/translation';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
@@ -18,9 +18,11 @@ interface EventModalProps {
 }
 
 const EventModal = (props: EventModalProps) => {
+    const user = getMeUser();
+    const strings = getStrings(user.language);
     const {event, setVisible} = props;
     const [currentResponse, setCurrentResponse] = useState('pending');
-    const currentUserIndex = event?.responses?.findIndex(response => response.user.id == getMeUser().id);
+    const currentUserIndex = event?.responses?.findIndex(response => response.user.id == user.id);
 
     const closeModal = () => {
         setVisible(false);
@@ -41,7 +43,7 @@ const EventModal = (props: EventModalProps) => {
 
         return (
             <View style={styles.responsesList}>
-                <Text>{event.responses.length} Teilnehmer</Text>
+                <Text>{event.responses.length} {strings.PARTICIPANTS}</Text>
                 <View style={styles.responsesView}>
                 {event.responses.map((response, index) => {
                     return (
@@ -78,19 +80,19 @@ const EventModal = (props: EventModalProps) => {
                     style={currentResponse == 'accepted' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('accepted')}}
                 >
-                    <Text style={currentResponse == 'accepted' ? styles.currentResponseButtonText : styles.respondingButtonText}>Annehmen</Text>
+                    <Text style={currentResponse == 'accepted' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.ACCEPT}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={currentResponse == 'pending' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('pending')}}
                 >
-                    <Text style={currentResponse == 'pending' ? styles.currentResponseButtonText : styles.respondingButtonText}>Vielleicht</Text>
+                    <Text style={currentResponse == 'pending' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.MAYBE}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={currentResponse == 'declined' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('declined')}}
                 >
-                    <Text style={currentResponse == 'declined' ? styles.currentResponseButtonText : styles.respondingButtonText}>Ablehnen</Text>
+                    <Text style={currentResponse == 'declined' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.DECLINE}</Text>
                 </TouchableOpacity>
             </View>
         </View>

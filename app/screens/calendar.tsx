@@ -1,5 +1,5 @@
 import React, {useRef, useCallback, useState} from 'react';
-import {StyleSheet, View, Modal} from 'react-native';
+import {StyleSheet, ScrollView, Modal} from 'react-native';
 import {ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar} from 'react-native-calendars';
 
 import testIDs from '../testIDs';
@@ -125,7 +125,7 @@ const Calendar = (props: Props) => {
   }, []);
 
   return (
-    <View>
+    <ScrollView>
       <Modal
         animationType="slide"
         transparent={true}
@@ -168,7 +168,7 @@ const Calendar = (props: Props) => {
           avoidDateUpdates
         />
       </CalendarProvider>
-    </View>
+    </ScrollView>
   );
 };
 
