@@ -1,25 +1,26 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    StyleSheet, Text, View, TextInput, SafeAreaView,
-    TextInputSubmitEditingEventData, NativeSyntheticEvent, TouchableOpacity
+    StyleSheet, Text, View, TextInput, ScrollView, SafeAreaView
 } from 'react-native';
 
 import { lightThemeColor, themeColor } from '../components/theme';
 import { getMeUser } from '../mocks/user';
 import getStrings from '../locales/translation';
 
-const user = getMeUser()
-const strings = getStrings(user.language);
 
-const TextOptionView = (title: string, reference?: any, callback?: () => void, secureView: boolean = false) => {
-    const [option, setOption] = useState(reference)
+const TextOptionView = (
+    title: string,
+    initialValue: any,
+    callback?: (option) => void,
+    isEditable: boolean = true,
+    isHiddenField: boolean = false,
+    textContentType: "none" | "username" | "password" = "none"
+) => {
+    const [option, setOption] = useState(initialValue)
 
-    function updateOption(e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) {
-        if (reference != undefined) {
-            reference = e.nativeEvent.text
-        }
+    function updateOption(){
         if (callback != undefined) {
-            callback()
+            callback(option)
         }
     }
 
@@ -29,61 +30,44 @@ const TextOptionView = (title: string, reference?: any, callback?: () => void, s
             <TextInput
                 style={styles.input}
                 onChangeText={setOption}
+                onEndEditing={updateOption}
                 onSubmitEditing={updateOption}
                 value={option}
-                secureTextEntry={secureView}
+                editable={isEditable}
+                secureTextEntry={isHiddenField}
+                selectTextOnFocus={isEditable}
+                textContentType={textContentType}
+                placeholder={isHiddenField ? "••••••••" : undefined}
             ></TextInput>
         </SafeAreaView>
     )
 }
 
-const EnumOptionView = (title: string, options: any[], reference?: any, callback?: (option) => void, secureView: boolean = false) => {
-    const [current, setCurrent] = useState(reference)
-    
-    function updateOption(option: any) {
-        setCurrent(option)
-        if (reference != undefined) {
-            // TODO: This does not seem to work, check language
-            reference = option
-        }
-        if (callback != undefined) {
-            callback(option)
-        }
+const Profile = () => {
+    const [user, setUser] = useState(getMeUser())
+    const strings = getStrings(user.language);
+
+    useEffect(() => {
+        setUser(user)
+    }, [user.firstname])
+
+    function updateName(option: string) {
+        // TODO implement backend call
+        user.firstname = option
     }
 
     return (
-        <SafeAreaView style={styles.optionView}>
-            <Text style={styles.inputTitle}>{title}</Text>
-            <View style={styles.optionsView}>
-                {options.map((option, index) => {
-                    return (
-                        <TouchableOpacity
-                            key={index}
-                            style={option == current ? styles.currentOption : styles.option}
-                            onPress={() => {updateOption(option)}}
-                        >
-                            <Text
-                                style={option == current ? styles.currentOptionText : styles.optionText}
-                            >{option}</Text>
-                        </TouchableOpacity>
-                    )
-                })}
-            </View>
-        </SafeAreaView>
-    )
-}
-
-const Profile = () => {
-    return (
-        <View>
+        <ScrollView>
             <View style={styles.headerView}>
                 <Text style={styles.header}>{strings.SETTINGS}</Text>
             </View>
             <View style={styles.bodyView}>
-                {TextOptionView(strings.NAME, user.firstname)}
-                {TextOptionView(strings.PASSWORD)}
+                {/*             title, reference, callback, isEditable, isHidden, textContentType */}
+                {TextOptionView(strings.USERNAME, user.username, undefined, false, false, "username")}
+                {TextOptionView(strings.NAME, user.firstname, updateName, true, false, "none")}
+                {TextOptionView(strings.PASSWORD, undefined, undefined, true, true, "password")}
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
@@ -112,7 +96,7 @@ const styles = StyleSheet.create({
         margin: 1,
     },
     inputTitle: {
-        width: 80,
+        width: 85,
         color: 'grey',
         textTransform: 'capitalize',
     },
