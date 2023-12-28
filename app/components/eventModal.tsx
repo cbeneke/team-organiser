@@ -1,14 +1,14 @@
-import {useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, Pressable, View } from 'react-native';
 import fontawesome from '@fortawesome/fontawesome'
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faQuestionCircle, faCheckCircle} from '@fortawesome/fontawesome-free-regular';
-import {faCircleXmark} from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faQuestionCircle, faCheckCircle } from '@fortawesome/fontawesome-free-regular';
+import { faCircleXmark } from '@fortawesome/free-regular-svg-icons';
 
-import {successThemeColor, failureThemeColor, lightThemeColor, themeColor} from './theme';
-import {Event} from '../types';
-import {getMeUser} from '../mocks/user';
+import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } from './theme';
+import { Event } from '../types';
 import getStrings from '../locales/translation';
+import { AuthContext } from '../App';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
@@ -18,9 +18,11 @@ interface EventModalProps {
 }
 
 const EventModal = (props: EventModalProps) => {
-    const user = getMeUser();
-    const strings = getStrings(user.language);
     const {event, setVisible} = props;
+    const auth = React.useContext(AuthContext);
+    const user = auth.user;
+    const strings = getStrings(auth.user?.language ? auth.user.language : 'en');
+
     const [currentResponse, setCurrentResponse] = useState('pending');
     const currentUserIndex = event?.responses?.findIndex(response => response.user.id == user.id);
 
@@ -67,33 +69,33 @@ const EventModal = (props: EventModalProps) => {
         <View style={styles.modalView}>
             <View style={styles.headerView}>
                 <Text style={styles.header}>{event.title}</Text>
-                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                <Pressable style={styles.closeButton} onPress={closeModal}>
                     <Text>X</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
             <View style={styles.contentView}>
                 <Text>{event.description}</Text>
             </View>
             {renderResponses()}
             <View style={styles.responseView}>
-                <TouchableOpacity
+                <Pressable
                     style={currentResponse == 'accepted' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('accepted')}}
                 >
                     <Text style={currentResponse == 'accepted' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.ACCEPT}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                     style={currentResponse == 'pending' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('pending')}}
                 >
                     <Text style={currentResponse == 'pending' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.MAYBE}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                     style={currentResponse == 'declined' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('declined')}}
                 >
                     <Text style={currentResponse == 'declined' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.DECLINE}</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </View>
     );
@@ -106,13 +108,7 @@ const styles = StyleSheet.create({
         margin: 20,
         backgroundColor: 'white',
         borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)',
         elevation: 5,
     },
     headerView: {

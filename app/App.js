@@ -1,47 +1,39 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import Calendar from './screens/calendar';
-import Profile from './screens/profile';
-import getStrings from './locales/translation';
-import { getMeUser } from './mocks/user';
+import LoginStack from './navigation/loginStack';
+import AppStack from './navigation/appStack';
 
-const user = getMeUser()
-const strings = getStrings(user.language);
+import { handleAuthAction, initialAuthContext, getStoredCredentials } from './contexts/auth';
 
-const Tab = createBottomTabNavigator();
+export const AuthContext = React.createContext(undefined);
+export const AuthDispatchContext = React.createContext(undefined);
 
 function App() {
-  return (    
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen
-          name="calendar"
-          component={Calendar}
-          options={{
-            headerShown: false,
-            tabBarLabel: strings.CALENDAR,
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="calendar" color={color} size={size} />
-            ),
-          }}
-          />
-        <Tab.Screen
-          name="profile"
-          component={Profile}
-          options={{
-            headerShown: false,
-            tabBarLabel: strings.PROFILE,
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="account" color={color} size={size} />
-            ),
-          }}
-          />
-      </Tab.Navigator>
-    </NavigationContainer>
-  );
+  const [state, dispatch] = React.useReducer(handleAuthAction, initialAuthContext)
+  
+  React.useEffect(() => {
+    // Fetch the token from storage then navigate to our appropriate place
+    const bootstrapAsync = async () => {
+      let user, token = await getStoredCredentials();
+      
+      if (user && token) {
+        dispatch({ type: 'SIGN_IN', token: token, user: user });
+      } else {
+        dispatch({ type: 'SIGN_OUT' });
+      }
+    };
+
+    bootstrapAsync();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={state}>
+      <AuthDispatchContext.Provider value={dispatch}>
+        <LoginStack></LoginStack>
+        <AppStack></AppStack>
+      </AuthDispatchContext.Provider>
+    </AuthContext.Provider>
+  )
 }
 
 export default App;

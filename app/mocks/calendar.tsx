@@ -1,15 +1,28 @@
-import {getUsers} from './user';
+import { getUsers } from './user';
+import { Event } from '../types';
 
-export function getEvents() {
-    return mockEvents;
+export function getEvents(): Promise<Event[]> {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(mockEvents);
+        }, 100);
+    });
 }
 
-export function getEvent(id: string) {
-    const event = mockEvents.find(event => event.id == id);
-    return event ? event : undefined;
+export function getEvent(id: string): Promise<Event> {
+    return new Promise((resolve, reject) => {
+        const event = mockEvents.find(event => event.id == id);
+        setTimeout(() => {
+            if (event != undefined) {
+                resolve(event);
+            } else {
+                reject('Event not found');
+            }
+        }, 100);
+    });
 }
 
-const mockUsers = getUsers();
+const mockUsers = await getUsers();
 const mockResponses = [
     {
         user: mockUsers[0],

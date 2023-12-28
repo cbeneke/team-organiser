@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Button} from 'react-native';
+import {StyleSheet, View, Text, Pressable, Button} from 'react-native';
 import testIDs from '../testIDs';
 
 
@@ -12,7 +12,7 @@ const AgendaItem = (props: ItemProps) => {
   const {item, onPress} = props;
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.item} testID={testIDs.agenda.ITEM}>
+    <Pressable onPress={onPress} style={styles.item} testID={testIDs.agenda.ITEM}>
       <View>
         <Text style={styles.itemHourText}>{item.hour}</Text>
         <Text style={styles.itemDurationText}>{item.duration}</Text>
@@ -21,7 +21,7 @@ const AgendaItem = (props: ItemProps) => {
       <View style={styles.itemButtonContainer}>
         <Button color={'grey'} title={'Info'} onPress={onPress}/>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
