@@ -4,14 +4,14 @@ import {
 } from 'react-native';
 
 import { lightThemeColor, themeColor } from '../components/theme';
-import { getMeUser } from '../mocks/user';
 import getStrings from '../locales/translation';
+import { AuthContext } from '../App';
 
 
 const TextOptionView = (
     title: string,
-    initialValue: any,
-    callback?: (option) => void,
+    initialValue: string | undefined,
+    callback?: (option: string) => void | undefined,
     isEditable: boolean = true,
     isHiddenField: boolean = false,
     textContentType: "none" | "username" | "password" = "none"
@@ -44,16 +44,13 @@ const TextOptionView = (
 }
 
 const Profile = () => {
-    const [user, setUser] = useState(getMeUser())
-    const strings = getStrings(user.language);
-
-    useEffect(() => {
-        setUser(user)
-    }, [user.firstname])
+    const state = React.useContext(AuthContext);
+    const strings = getStrings(state.user.language);
+    const [password, setPassword] = useState('')
 
     function updateName(option: string) {
         // TODO implement backend call
-        user.firstname = option
+        state.user.firstname = option
     }
 
     return (
@@ -62,10 +59,10 @@ const Profile = () => {
                 <Text style={styles.header}>{strings.SETTINGS}</Text>
             </View>
             <View style={styles.bodyView}>
-                {/*             title, reference, callback, isEditable, isHidden, textContentType */}
-                {TextOptionView(strings.USERNAME, user.username, undefined, false, false, "username")}
-                {TextOptionView(strings.NAME, user.firstname, updateName, true, false, "none")}
-                {TextOptionView(strings.PASSWORD, undefined, undefined, true, true, "password")}
+                {/*             title,            reference,            callback,   isEditable, isHidden, textContentType */}
+                {TextOptionView(strings.USERNAME, state.user.username,  undefined,  false,      false,    "username")}
+                {TextOptionView(strings.NAME,     state.user.firstname, updateName, true,       false,    "none")}
+                {TextOptionView(strings.PASSWORD, password,             undefined,  true,       true,     "password")}
             </View>
         </ScrollView>
     )

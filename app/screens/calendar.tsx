@@ -1,13 +1,15 @@
-import React, {useRef, useCallback, useState} from 'react';
-import {StyleSheet, ScrollView, Modal} from 'react-native';
-import {ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar} from 'react-native-calendars';
+import React, { useRef, useCallback, useState } from 'react';
+import { StyleSheet, ScrollView, Modal, Text } from 'react-native';
+import { ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar } from 'react-native-calendars';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 import testIDs from '../testIDs';
 import AgendaItem from '../components/agendaItem';
-import {getTheme, lightThemeColor, themeColor} from '../components/theme';
-import {getEvents, getEvent} from '../mocks/calendar';
-import {Event, AgendaSection} from '../types';
+import { getTheme, lightThemeColor, themeColor } from '../components/theme';
+import { getEvents, getEvent } from '../mocks/calendar';
+import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
+import agendaItem from '../components/agendaItem';
 
 const leftArrowIcon = require('../assets/previous.png');
 const rightArrowIcon = require('../assets/next.png');
@@ -90,11 +92,19 @@ function unmarkSelectedDay(marked: object, day: string) {
   }
 }
 
+async function fetchEvents() {
+  const events = await getEvents();
+  const agendaItems = getAgendaItems(events);
+  const markedDays = getEventDates(agendaItems);
+
+  return {events, agendaItems, markedDays};
+}
+
 const Calendar = (props: Props) => {
+  const queryClient = useQueryClient()
+
   const {weekView} = props;
-  const events = useRef(getEvents());
-  const agenda = useRef(getAgendaItems(events.current));
-  const markedDays = useRef(getEventDates(agenda.current));
+  const query = useQuery({queryKey: ['events'], queryFn: fetchEvents});
   const previousDay = useRef(extractDate());
   const theme = useRef(getTheme());
   const todayBtnTheme = useRef({
@@ -102,11 +112,16 @@ const Calendar = (props: Props) => {
   });
 
   const onDateChanged = useCallback((dateString: string) => {
-    unmarkSelectedDay(markedDays.current, previousDay.current);
-    markSelectedDay(markedDays.current, dateString);
+    // TODO: Rework this to use mutations (?)
+    // https://tanstack.com/query/latest/docs/react/quick-start
+    if (!query.data?.markedDays) {
+      return;
+    }
+    unmarkSelectedDay(query.data.markedDays, previousDay.current);
+    markSelectedDay(query.data.markedDays, dateString);
     previousDay.current = dateString;
 
-  }, [markedDays]);
+  }, [query.data?.markedDays]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const modalProps = useRef({
@@ -145,7 +160,7 @@ const Calendar = (props: Props) => {
           <WeekCalendar
             testID={testIDs.weekCalendar.CONTAINER}
             firstDay={1}
-            markedDates={markedDays.current}
+            markedDates={query.data?.markedDays}
           />
         ) : (
           <ExpandableCalendar
@@ -154,14 +169,14 @@ const Calendar = (props: Props) => {
             calendarStyle={styles.calendar}
             theme={theme.current}
             firstDay={1}
-            markedDates={markedDays.current}
+            markedDates={query.data?.markedDays}
             leftArrowImageSource={leftArrowIcon}
             rightArrowImageSource={rightArrowIcon}
             animateScroll
           />
         )}
         <AgendaList
-          sections={agenda.current}
+          sections={query.data?.agendaItems ? query.data.agendaItems : []}
           renderItem={renderItem}
           scrollToNextEvent
           sectionStyle={styles.section}
