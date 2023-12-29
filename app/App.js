@@ -1,9 +1,8 @@
 import * as React from 'react';
 
-import LoginStack from './navigation/loginStack';
-import AppStack from './navigation/appStack';
-
-import { handleAuthAction, initialAuthContext, getStoredCredentials } from './contexts/auth';
+import LoginStack from './components/loginStack';
+import AppStack from './components/appStack';
+import { handleAuthAction, initialAuthContext, getStoredCredentials } from './helper/authContext';
 
 export const AuthContext = React.createContext(undefined);
 export const AuthDispatchContext = React.createContext(undefined);

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable } from 'react-native';
-import { themeColor } from '../components/theme';
+import { themeColor } from '../helper/theme';
 import getStrings from '../locales/translation';
 
 import { AuthContext, AuthDispatchContext } from '../App';
-import { handleSignIn } from '../contexts/auth';
+import { handleSignIn } from '../helper/authContext';
 
 // TOOD: Figure out how to use device settings
 const strings = getStrings('de');

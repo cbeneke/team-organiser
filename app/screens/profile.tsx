@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState } from 'react';
 import {
     StyleSheet, Text, View, TextInput, ScrollView, SafeAreaView
 } from 'react-native';
 
-import { lightThemeColor, themeColor } from '../components/theme';
+import { lightThemeColor, themeColor } from '../helper/theme';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
 

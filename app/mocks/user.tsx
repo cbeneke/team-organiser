@@ -90,6 +90,11 @@ export function getUsers(): Promise<MockHttpResponse<User[]>> {
     });
 }
 
+export function getRawUsers(): User[] {
+    return mockUsers;
+}
+
+
 let mockUsers = [
     {
         id: 'd0f7d07c-88a6-449d-afab-78343c19227c',
