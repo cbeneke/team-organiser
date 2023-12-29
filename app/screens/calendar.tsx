@@ -1,7 +1,7 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, Modal, Text } from 'react-native';
 import { ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar } from 'react-native-calendars';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import testIDs from '../testIDs';
 import AgendaItem from '../components/agendaItem';
@@ -9,7 +9,6 @@ import { getTheme, lightThemeColor, themeColor } from '../components/theme';
 import { getEvents, getEvent } from '../mocks/calendar';
 import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
-import agendaItem from '../components/agendaItem';
 
 const leftArrowIcon = require('../assets/previous.png');
 const rightArrowIcon = require('../assets/next.png');
@@ -62,7 +61,7 @@ function getAgendaItems(events: Event[]) {
   return items;
 }
 
-function getEventDates(items: AgendaSection[]) {
+function getEventMarkers(items: AgendaSection[]) {
   let marked = {}
   // Set markers for each day that has an event
   items.forEach(item => {
@@ -71,12 +70,11 @@ function getEventDates(items: AgendaSection[]) {
     }
   });
 
-  // Initially mark today as selected day
-  markSelectedDay(marked, extractDate());
   return marked;
 }
 
-function markSelectedDay(marked: object, day: string) {
+function markDaySelected(marked: object, day: string) {
+  // Keep mark if present and add selected state
   if (marked[day]) {
     marked[day] = {marked: true, selected: true};
   } else {
@@ -84,44 +82,34 @@ function markSelectedDay(marked: object, day: string) {
   }
 }
 
-function unmarkSelectedDay(marked: object, day: string) {
-  if (marked[day].marked) {
-    marked[day] = {marked: true};
-  } else {
-    delete marked[day];
-  }
-}
-
 async function fetchEvents() {
   const events = await getEvents();
   const agendaItems = getAgendaItems(events);
-  const markedDays = getEventDates(agendaItems);
+  const markedDays = getEventMarkers(agendaItems);
 
   return {events, agendaItems, markedDays};
 }
 
 const Calendar = (props: Props) => {
-  const queryClient = useQueryClient()
+  //const queryClient = useQueryClient()
 
   const {weekView} = props;
   const query = useQuery({queryKey: ['events'], queryFn: fetchEvents});
-  const previousDay = useRef(extractDate());
+  const [markedDays, setMarkedDays] = useState(null);
+  const [currentDay, setCurrentDay] = useState(extractDate());
+  useEffect(() => {
+    let days = {};
+    if (query.data?.markedDays) {
+      days = {...query.data.markedDays}
+    }
+    markDaySelected(days, currentDay);
+    setMarkedDays(days);
+  }, [query.data, currentDay]); // Update markedDays if either event data or current day changes
+
   const theme = useRef(getTheme());
   const todayBtnTheme = useRef({
     todayButtonTextColor: themeColor
   });
-
-  const onDateChanged = useCallback((dateString: string) => {
-    // TODO: Rework this to use mutations (?)
-    // https://tanstack.com/query/latest/docs/react/quick-start
-    if (!query.data?.markedDays) {
-      return;
-    }
-    unmarkSelectedDay(query.data.markedDays, previousDay.current);
-    markSelectedDay(query.data.markedDays, dateString);
-    previousDay.current = dateString;
-
-  }, [query.data?.markedDays]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const modalProps = useRef({
@@ -154,13 +142,13 @@ const Calendar = (props: Props) => {
       <CalendarProvider
         date={extractDate()}
         theme={todayBtnTheme.current}
-        onDateChanged={onDateChanged}
+        onDateChanged={setCurrentDay}
       >
         {weekView ? (
           <WeekCalendar
             testID={testIDs.weekCalendar.CONTAINER}
             firstDay={1}
-            markedDates={query.data?.markedDays}
+            markedDates={markedDays}
           />
         ) : (
           <ExpandableCalendar
@@ -169,7 +157,7 @@ const Calendar = (props: Props) => {
             calendarStyle={styles.calendar}
             theme={theme.current}
             firstDay={1}
-            markedDates={query.data?.markedDays}
+            markedDates={markedDays}
             leftArrowImageSource={leftArrowIcon}
             rightArrowImageSource={rightArrowIcon}
             animateScroll
