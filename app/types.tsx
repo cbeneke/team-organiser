@@ -1,7 +1,13 @@
+export interface Token {
+    accessToken: string;
+    tokenType: string;
+}
+
 export interface User {
     id: string;
     username: string;
     firstname: string;
+    language: string;
 }
 
 export interface EventResponse {

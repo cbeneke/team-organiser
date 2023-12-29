@@ -1,19 +1,38 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Calendar from './screens/calendar';
+import LoginStack from './components/loginStack';
+import AppStack from './components/appStack';
+import { handleAuthAction, initialAuthContext, getStoredCredentials } from './helper/authContext';
 
-const Stack = createNativeStackNavigator();
+export const AuthContext = React.createContext(undefined);
+export const AuthDispatchContext = React.createContext(undefined);
 
 function App() {
+  const [state, dispatch] = React.useReducer(handleAuthAction, initialAuthContext)
+  
+  React.useEffect(() => {
+    // Fetch the token from storage then navigate to our appropriate place
+    const bootstrapAsync = async () => {
+      let user, token = await getStoredCredentials();
+      
+      if (user && token) {
+        dispatch({ type: 'SIGN_IN', token: token, user: user });
+      } else {
+        dispatch({ type: 'SIGN_OUT' });
+      }
+    };
+
+    bootstrapAsync();
+  }, []);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Calendar" component={Calendar} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+    <AuthContext.Provider value={state}>
+      <AuthDispatchContext.Provider value={dispatch}>
+        <LoginStack></LoginStack>
+        <AppStack></AppStack>
+      </AuthDispatchContext.Provider>
+    </AuthContext.Provider>
+  )
 }
 
 export default App;
