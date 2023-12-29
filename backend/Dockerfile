@@ -41,6 +41,7 @@ USER appuser
 
 # Copy the source code into the container.
 COPY . .
+COPY alembic.docker.ini alembic.ini
 
 # Expose the port that the application listens on.
 EXPOSE 8000
