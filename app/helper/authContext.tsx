@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 import { postLogin, getUsersMe } from '../mocks/user';
 
@@ -48,8 +49,10 @@ export const initialAuthContext = {
 
 export async function getStoredCredentials() {
 
-  // TODO Implement store retrieval for web and mobile
-  return {user: null, token: null}
+  // TODO Implement store retrieval for web
+  if (Platform.OS === 'web') {
+    return {user: null, token: null}
+  }
 
   let token;
 

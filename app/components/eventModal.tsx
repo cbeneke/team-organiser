@@ -1,53 +1,83 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, Pressable, View } from 'react-native';
 import fontawesome from '@fortawesome/fontawesome'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faQuestionCircle, faCheckCircle } from '@fortawesome/fontawesome-free-regular';
 import { faCircleXmark } from '@fortawesome/free-regular-svg-icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } from './theme';
+import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } from '../helper/theme';
 import { Event } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
+import { getEvent } from '../mocks/events';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
 interface EventModalProps {
-    event?: Event;
+    eventUUID?: string;
     setVisible: (visible: boolean) => void;
 }
 
 const EventModal = (props: EventModalProps) => {
-    const {event, setVisible} = props;
+    const {eventUUID, setVisible} = props;
+
+    const queryClient = useQueryClient()
+    async function fetchEvent() {
+        const res = await getEvent(eventUUID)
+        return res
+    }
+    async function updateEvent(event: Event) {
+        // TODO
+        console.log("Updating event: " + event.title)
+        return
+    }
+    const query = useQuery({ queryKey: ['events', eventUUID], queryFn: fetchEvent, enabled: !!eventUUID })
+    useEffect(() => {
+        if (query.data?.responses) {
+            const idx = query.data.responses.findIndex(response => response.user.id == auth.user.id)
+            setCurrentResponse(query.data.responses[idx].status)
+        }
+    }, [query.data?.responses])
+
+    const mutation = useMutation({
+        mutationFn: updateEvent,
+        onSuccess: () => {
+          // Invalidate and refetch
+          queryClient.invalidateQueries({ queryKey: ['events', eventUUID] })
+        },
+      })
+
     const auth = React.useContext(AuthContext);
-    const user = auth.user;
     const strings = getStrings(auth.user?.language ? auth.user.language : 'en');
 
     const [currentResponse, setCurrentResponse] = useState('pending');
-    const currentUserIndex = event?.responses?.findIndex(response => response.user.id == user.id);
 
     const closeModal = () => {
         setVisible(false);
     };
 
     const updateResponse = (status: string) => {
-        // TODO: async API call to update response on backend
         setCurrentResponse(status);
-        if (currentUserIndex != undefined) {
-            event.responses[currentUserIndex].status = status;
-        }
+        query.data.responses = query.data.responses.map(response => {
+            if (response.user.id == auth.user.id) {
+                return {...response, status: status}
+            }
+            return response
+        })
+        mutation.mutate(query.data) // TODO Figure out if this is the right way to do this
     }
 
-    const renderResponses = () => {
-        if (!event || !event.responses) {
+    const Responses = () => {
+        if (query.isLoading || query.isError || !query.data || !query.data.responses) {
             return null;
         }
 
         return (
             <View style={styles.responsesList}>
-                <Text>{event.responses.length} {strings.PARTICIPANTS}</Text>
+                <Text>{query.data.responses.length} {strings.PARTICIPANTS}</Text>
                 <View style={styles.responsesView}>
-                {event.responses.map((response, index) => {
+                {query.data?.responses.map((response, index) => {
                     return (
                         <View key={index} style={styles.response}>
                             {response.status == 'accepted' && <FontAwesomeIcon icon={['far', 'check-circle']} color={successThemeColor} />}
@@ -62,21 +92,22 @@ const EventModal = (props: EventModalProps) => {
         );
     };
 
-    if (!event) {
+    if (query.isLoading || query.isError || !query.data) {
         return null;
     }
+
     return (
         <View style={styles.modalView}>
             <View style={styles.headerView}>
-                <Text style={styles.header}>{event.title}</Text>
+                <Text style={styles.header}>{query.data.title}</Text>
                 <Pressable style={styles.closeButton} onPress={closeModal}>
                     <Text>X</Text>
                 </Pressable>
             </View>
             <View style={styles.contentView}>
-                <Text>{event.description}</Text>
+                <Text>{query.data.description}</Text>
             </View>
-            {renderResponses()}
+            <Responses></Responses>
             <View style={styles.responseView}>
                 <Pressable
                     style={currentResponse == 'accepted' ? styles.currentResponseButton : styles.responseButton}

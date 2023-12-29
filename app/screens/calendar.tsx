@@ -1,12 +1,12 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Modal, Text } from 'react-native';
+import { StyleSheet, ScrollView, Modal } from 'react-native';
 import { ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar } from 'react-native-calendars';
 import { useQuery } from '@tanstack/react-query';
 
 import testIDs from '../testIDs';
 import AgendaItem from '../components/agendaItem';
-import { getTheme, lightThemeColor, themeColor } from '../components/theme';
-import { getEvents, getEvent } from '../mocks/calendar';
+import { getTheme, lightThemeColor, themeColor } from '../helper/theme';
+import { getEvents } from '../mocks/events';
 import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
 
@@ -73,15 +73,6 @@ function getEventMarkers(items: AgendaSection[]) {
   return marked;
 }
 
-function markDaySelected(marked: object, day: string) {
-  // Keep mark if present and add selected state
-  if (marked[day]) {
-    marked[day] = {marked: true, selected: true};
-  } else {
-    marked[day] = {selected: true};
-  }
-}
-
 async function fetchEvents() {
   const events = await getEvents();
   const agendaItems = getAgendaItems(events);
@@ -102,7 +93,7 @@ const Calendar = (props: Props) => {
     if (query.data?.markedDays) {
       days = {...query.data.markedDays}
     }
-    markDaySelected(days, currentDay);
+    days[currentDay] = {...days[currentDay], selected: true};
     setMarkedDays(days);
   }, [query.data, currentDay]); // Update markedDays if either event data or current day changes
 
@@ -114,13 +105,13 @@ const Calendar = (props: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const modalProps = useRef({
     setVisible: setModalVisible,
-    event: undefined,
+    eventUUID: undefined,
   })
 
   const renderItem = useCallback(({item}: any) => {
     function openEventModal(id: string) {
       return () => {
-        modalProps.current.event = getEvent(id);
+        modalProps.current.eventUUID = id;
         setModalVisible(true);
       }
     }

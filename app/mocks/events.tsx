@@ -1,4 +1,4 @@
-import { getUsers } from './user';
+import { getRawUsers } from './user';
 import { Event } from '../types';
 
 export function getEvents(): Promise<Event[]> {
@@ -22,7 +22,7 @@ export function getEvent(id: string): Promise<Event> {
     });
 }
 
-const mockUsers = await getUsers();
+const mockUsers = getRawUsers();
 const mockResponses = [
     {
         user: mockUsers[0],
