@@ -5,7 +5,7 @@
 # Database
 *.db
 
-# Python Caches 
+# Python Caches
 __pycache__
 .pytest_cache/
 
