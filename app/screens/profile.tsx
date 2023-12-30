@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet, Text, View, TextInput, ScrollView, SafeAreaView
 } from 'react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { lightThemeColor, themeColor } from '../helper/theme';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
+import { getUsersMe, putUser } from '../helper/api';
+import { User } from '../types';
 
-
-const TextOptionView = (
+interface TextOptionProps {
     title: string,
-    initialValue: string | undefined,
+    initialValue: string,
     callback?: (option: string) => void | undefined,
-    isEditable: boolean = true,
-    isHiddenField: boolean = false,
-    textContentType: "none" | "username" | "password" = "none"
-) => {
+    isEditable?: boolean,
+    isHiddenField?: boolean,
+    textContentType?: "none" | "username" | "password"
+}
+
+function TextOptionView (props: TextOptionProps) {
+    const {title, initialValue, callback, isEditable, isHiddenField, textContentType} = props;
+    
     const [option, setOption] = useState(initialValue)
+    useEffect(() => {
+        setOption(initialValue)
+    }, [initialValue])
 
     function updateOption(){
         if (callback != undefined) {
@@ -43,14 +52,47 @@ const TextOptionView = (
     )
 }
 
+TextOptionView.defaultProps = {
+    initialValue: '',
+    callback: undefined,
+    isEditable: true,
+    isHiddenField: false,
+    textContentType: "none"
+}
+
 const Profile = () => {
-    const state = React.useContext(AuthContext);
-    const strings = getStrings(state.user.language);
-    const [password, setPassword] = useState('')
+    const auth = React.useContext(AuthContext);
+    const strings = getStrings(auth.user.language);
+
+    const queryClient = useQueryClient()
+    async function fetchUser() {
+        try {
+            const res = await getUsersMe(auth.token)
+            return res
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    async function updateUser(user: User) {
+        await putUser(auth.token, user)
+        auth.user = user
+    }
+    const query = useQuery({ queryKey: ['users', auth.id], queryFn: fetchUser })
+
+    const mutation = useMutation({
+        mutationFn: updateUser,
+        onSuccess: () => {
+          // Invalidate and refetch
+          queryClient.invalidateQueries({ queryKey: ['users', auth.id] })
+        },
+    })
 
     function updateName(option: string) {
-        // TODO implement backend call
-        state.user.firstname = option
+        mutation.mutate({...query.data, firstname: option})
+    }
+
+    function updatePassword(option: string) {
+        mutation.mutate({...query.data, password: option})
     }
 
     return (
@@ -59,10 +101,23 @@ const Profile = () => {
                 <Text style={styles.header}>{strings.SETTINGS}</Text>
             </View>
             <View style={styles.bodyView}>
-                {/*             title,            reference,            callback,   isEditable, isHidden, textContentType */}
-                {TextOptionView(strings.USERNAME, state.user.username,  undefined,  false,      false,    "username")}
-                {TextOptionView(strings.NAME,     state.user.firstname, updateName, true,       false,    "none")}
-                {TextOptionView(strings.PASSWORD, password,             undefined,  true,       true,     "password")}
+                <TextOptionView
+                    title={strings.USERNAME}
+                    initialValue={query.data?.username}
+                    isEditable={false}
+                    textContentType={"username"}
+                />
+                <TextOptionView
+                    title={strings.NAME}
+                    initialValue={query.data?.first_name}
+                    callback={updateName}
+                />
+                <TextOptionView
+                    title={strings.PASSWORD}
+                    callback={updatePassword}
+                    isHiddenField={true}
+                    textContentType={"password"}
+                />
             </View>
         </ScrollView>
     )

@@ -52,7 +52,7 @@ const EventModal = (props: EventModalProps) => {
           // Invalidate and refetch
           queryClient.invalidateQueries({ queryKey: ['events', eventUUID] })
         },
-      })
+    })
 
     const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
 

@@ -6,7 +6,8 @@ const strings = {
     'de': german,
 };
 
-function getStrings(key: string) {
+// TODO: Can we make this more typesafe?
+function getStrings(key: string): any {
     return key in strings ? strings[key] : strings['en'];
 }
 

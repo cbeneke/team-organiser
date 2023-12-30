@@ -1,3 +1,5 @@
+import { User } from '../types';
+
 export function postLogin(username: string, password: string) {
     return fetch('https://pb-api.rootlink.de/auth/login', {
         method: 'POST',
@@ -76,6 +78,21 @@ export function putEventResponse(token: string, eventID: string, userID: string,
             'Authorization': 'Bearer ' + token,
             'Accept': 'application/json',
         },
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+export function putUser(token: string, user: User) {
+    return fetch('https://pb-api.rootlink.de/users/' + user.id, {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(user)
     })
     .then((response) => response.json())
     .catch((error) => {

@@ -97,6 +97,15 @@ export function getRawUsers(): User[] {
     return mockUsers;
 }
 
+export function putUser(token: string, user: User): Promise<User> {
+    // TODO: Implement me
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(user);
+        }, 100);
+    });
+}
+
 let mockRoles = [
     {
         "name": "trainer",
