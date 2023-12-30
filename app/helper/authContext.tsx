@@ -1,7 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// import { postLogin, getUsersMe } from '../mocks/user';
 import { postLogin, getUsersMe } from '../helper/api';
 
 export function handleAuthAction(prevState, action) {
