@@ -41,8 +41,8 @@ export function getUsers() {
     // TODO: Implement me
 }
 
-export function getEvents(token: string) {
-    return fetch('https://pb-api.rootlink.de/events/', {
+export function getEvents(token: string, userID: string) {
+    return fetch('https://pb-api.rootlink.de/users/' + userID + '/events', {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,

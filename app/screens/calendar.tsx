@@ -76,10 +76,17 @@ function getEventMarkers(items: AgendaSection[]) {
 
 const Calendar = (props: Props) => {
   //const queryClient = useQueryClient()
-  const state = React.useContext(AuthContext);
+  const auth = React.useContext(AuthContext);
 
   async function fetchEvents() {
-    const events = await getEvents(state.token);
+    console.log(auth.user.id)
+    const userEvents = await getEvents(auth.token, auth.user.id);
+    let events: Event[] = [];
+    if (userEvents) {
+      userEvents.forEach((userevent) => {
+        events.push(userevent.event);
+      })
+    }
     const agendaItems = getAgendaItems(events);
     const markedDays = getEventMarkers(agendaItems);
   
