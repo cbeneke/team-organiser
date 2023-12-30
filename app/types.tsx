@@ -1,6 +1,6 @@
 export interface Token {
-    accessToken: string;
-    tokenType: string;
+    access_token: string;
+    token_type: string;
 }
 
 export interface User {
@@ -17,8 +17,8 @@ export interface EventResponse {
 
 export interface Event {
     id: string;
-    startTime: string;
-    endTime: string;
+    start_time: string;
+    end_time: string;
     title: string;
     description: string;
     responses: EventResponse[];

@@ -1,7 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-import { postLogin, getUsersMe } from '../mocks/user';
+// import { postLogin, getUsersMe } from '../mocks/user';
+import { postLogin, getUsersMe } from '../helper/api';
 
 export function handleAuthAction(prevState, action) {
     switch (action.type) {
@@ -24,18 +25,17 @@ export function handleAuthAction(prevState, action) {
 export async function handleSignIn(username, password) {
   let user = null;
   let token = null;
-  const loginResponse = await postLogin(username, password)
-
-  if (loginResponse.status === 200) {
-    token = loginResponse.data.accessToken;
-  }
-  if (token == null) {
+  try {
+    const loginResponse = await postLogin(username, password)
+    token = loginResponse.access_token
+  } catch (e) {
     return {user: null, token: null}
   }
 
-  const userResponse = await getUsersMe()
-  if (userResponse.status === 200) {
-    user = userResponse.data
+  try {
+    user = await getUsersMe(token)
+  } catch (e) {
+    return {user: null, token: null}
   }
 
   return {user: user, token: token}
@@ -63,7 +63,7 @@ export async function getStoredCredentials() {
     return {user: null, token: null}
   }
 
-  const response = await getUsersMe()
+  const response = await getUsersMe(token)
   if (response.status == 200) {
     return {user: response.data, token: token}
   } else {

@@ -1,5 +1,4 @@
 import { User, Token } from "../types";
-import { MockHttpResponse } from "./types";
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 
@@ -35,46 +34,37 @@ function getToken(username: string): string {
     return unsignedToken
 }
 
-export function postLogin(username: string, password: string): Promise<MockHttpResponse<Token>> {
+export function postLogin(username: string, password: string): Promise<Token> {
     return new Promise((resolve, reject) => {
         const user = mockUsers.find(i => i.username == username);
         const token = getToken(username);
         setTimeout(() => {
-            if (user && password == 'pass') {
+            if (user && password == 'pass' && user.is_active) {
                 mockCurrentUser = user;
-                resolve({status: 200, data: {accessToken: token, tokenType: 'bearer'}});
+                resolve({access_token: token, token_type: 'bearer'});
             } else {
-                reject({status: 404, data: {}});
+                reject({});
             }
-        }, 100);
+        }, 500);
     });
 }
 
-export function postRegister(username: string, password: string): Promise<MockHttpResponse<User>> {
+export function postRegister(username: string, password: string): Promise<User> {
     return new Promise((resolve, reject) => {
-        const newUser = {id: uuidv4(), username: username, firstname: username, language: 'de'}
+        const newUser = {id: uuidv4(), username: username, firstname: username, language: 'de', is_active: false, roles: [mockRoles[1]]}
         mockUsers.push(newUser);
         setTimeout(() => {
-            resolve({status: 200, data: newUser});
-        }, 100);
-    });
-
-}
-
-export function getUsersMe(): Promise<MockHttpResponse<User>> {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve({status: 200, data: mockCurrentUser});
+            resolve(newUser);
         }, 100);
     });
 }
 
-export function getUser(id: string): Promise<MockHttpResponse<User>> {
+export function getUsersMe(token: string): Promise<User> {
     return new Promise((resolve, reject) => {
-        const user = mockUsers.find(user => user.id == id);
+        const tokenValid = getToken(mockCurrentUser.username) == token;
         setTimeout(() => {
-            if (user != undefined) {
-                resolve({status: 200, data: user});
+            if (tokenValid) {
+                resolve(mockCurrentUser);
             } else {
                 reject({});
             }
@@ -82,10 +72,23 @@ export function getUser(id: string): Promise<MockHttpResponse<User>> {
     });
 }
 
-export function getUsers(): Promise<MockHttpResponse<User[]>> {
+export function getUser(token: string, id: string): Promise<User> {
+    return new Promise((resolve, reject) => {
+        const user = mockUsers.find(user => user.id == id);
+        setTimeout(() => {
+            if (user != undefined) {
+                resolve(user);
+            } else {
+                reject({});
+            }
+        }, 100);
+    });
+}
+
+export function getUsers(token: string): Promise<User[]> {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve({status: 200, data: mockUsers});
+            resolve(mockUsers);
         }, 100);
     });
 }
@@ -94,6 +97,16 @@ export function getRawUsers(): User[] {
     return mockUsers;
 }
 
+let mockRoles = [
+    {
+        "name": "trainer",
+        "description": "A trainer can create and manage training sessions.",
+    },
+    {
+        "name": "user",
+        "description": "A user can participate in training sessions.",
+    },
+]
 
 let mockUsers = [
     {
@@ -101,18 +114,24 @@ let mockUsers = [
         username: 'lisa',
         firstname: 'Lisa',
         language: 'de',
+        is_active: true,
+        roles: [mockRoles[0]],
     },
     {
         id: '7c813ca2-a895-4349-a36f-a4317cee6dcf',
         username: 'helen',
         firstname: 'Helen',
         language: 'en',
+        is_active: true,
+        roles: [mockRoles[1]],
     },
     {
         id: 'a8962fc5-b1b4-4ac5-b1e4-c7665efcf931',
         username: 'maurice',
         firstname: 'Maurice',
         language: 'de',
+        is_active: true,
+        roles: [mockRoles[1]],
     },
 ]
 
