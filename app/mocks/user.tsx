@@ -51,7 +51,7 @@ export function postLogin(username: string, password: string): Promise<Token> {
 
 export function postRegister(username: string, password: string): Promise<User> {
     return new Promise((resolve, reject) => {
-        const newUser = {id: uuidv4(), username: username, firstname: username, language: 'de', is_active: false, roles: [mockRoles[1]]}
+        const newUser = {id: uuidv4(), username: username, display_name: username, language: 'de', is_active: false, roles: [mockRoles[1]]}
         mockUsers.push(newUser);
         setTimeout(() => {
             resolve(newUser);
@@ -121,7 +121,7 @@ let mockUsers = [
     {
         id: 'd0f7d07c-88a6-449d-afab-78343c19227c',
         username: 'lisa',
-        firstname: 'Lisa',
+        display_name: 'Lisa',
         language: 'de',
         is_active: true,
         roles: [mockRoles[0]],
@@ -129,7 +129,7 @@ let mockUsers = [
     {
         id: '7c813ca2-a895-4349-a36f-a4317cee6dcf',
         username: 'helen',
-        firstname: 'Helen',
+        display_name: 'Helen',
         language: 'en',
         is_active: true,
         roles: [mockRoles[1]],
@@ -137,7 +137,7 @@ let mockUsers = [
     {
         id: 'a8962fc5-b1b4-4ac5-b1e4-c7665efcf931',
         username: 'maurice',
-        firstname: 'Maurice',
+        display_name: 'Maurice',
         language: 'de',
         is_active: true,
         roles: [mockRoles[1]],

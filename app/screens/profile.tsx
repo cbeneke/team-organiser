@@ -8,7 +8,7 @@ import { lightThemeColor, themeColor } from '../helper/theme';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
 import { getUsersMe, putUser } from '../helper/api';
-import { User } from '../types';
+import { UpdateUser } from '../types';
 
 interface TextOptionProps {
     title: string,
@@ -73,9 +73,11 @@ const Profile = () => {
             console.error(error)
         }
     }
-    async function updateUser(user: User) {
-        await putUser(auth.token, user)
-        auth.user = user
+    async function updateUser(update: UpdateUser) {
+        await putUser(auth.token, auth.user.id, update)
+        if (update.display_name) {
+            auth.user.display_name = update.display_name
+        }
     }
     const query = useQuery({ queryKey: ['users', auth.id], queryFn: fetchUser })
 
@@ -86,14 +88,6 @@ const Profile = () => {
           queryClient.invalidateQueries({ queryKey: ['users', auth.id] })
         },
     })
-
-    function updateName(option: string) {
-        mutation.mutate({...query.data, firstname: option})
-    }
-
-    function updatePassword(option: string) {
-        mutation.mutate({...query.data, password: option})
-    }
 
     return (
         <ScrollView>
@@ -109,12 +103,12 @@ const Profile = () => {
                 />
                 <TextOptionView
                     title={strings.NAME}
-                    initialValue={query.data?.first_name}
-                    callback={updateName}
+                    initialValue={query.data?.display_name}
+                    callback={(option) => mutation.mutate({display_name: option})}
                 />
                 <TextOptionView
                     title={strings.PASSWORD}
-                    callback={updatePassword}
+                    callback={(option) => mutation.mutate({password: option})}
                     isHiddenField={true}
                     textContentType={"password"}
                 />

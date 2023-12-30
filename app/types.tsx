@@ -6,8 +6,14 @@ export interface Token {
 export interface User {
     id: string;
     username: string;
-    firstname: string;
+    display_name: string;
     language: string;
+}
+
+export interface UpdateUser {
+    display_name?: string | undefined;
+    password?: string | undefined;
+    is_trainer?: boolean | undefined;
 }
 
 export interface EventResponse {

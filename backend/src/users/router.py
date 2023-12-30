@@ -69,11 +69,14 @@ async def router_update_user(
     if not is_admin_or_self(actor, user, db):
         raise AccessDenied
 
+    if update.is_trainer is not None and not actor.is_trainer:
+        raise AccessDenied
+
     # Return user without update if no update is requested
     if all_fields_are_none(update):
         return user
 
-    user = update_user(user, update.password, update.is_trainer, db)
+    user = update_user(user, update.display_name, update.password, update.is_trainer, db)
     return user
 
 

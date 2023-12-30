@@ -19,7 +19,7 @@ function AppStack() {
     return null;
   }
 
-  const strings = getStrings(state.user?.language ? state.user.language : 'en');
+  const strings = getStrings(state.user?.language ? state.user.language : 'de');
 
   const queryClient = new QueryClient()
 

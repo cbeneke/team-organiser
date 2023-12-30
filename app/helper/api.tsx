@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { UpdateUser } from '../types';
 
 export function postLogin(username: string, password: string) {
     return fetch('https://pb-api.rootlink.de/auth/login', {
@@ -85,14 +85,15 @@ export function putEventResponse(token: string, eventID: string, userID: string,
     });
 }
 
-export function putUser(token: string, user: User) {
-    return fetch('https://pb-api.rootlink.de/users/' + user.id, {
+export function putUser(token: string, userID: string, update: UpdateUser) {
+    return fetch('https://pb-api.rootlink.de/users/' + userID, {
         method: 'PUT',
         headers: {
             'Authorization': 'Bearer ' + token,
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify(user)
+        body: JSON.stringify(update)
     })
     .then((response) => response.json())
     .catch((error) => {

@@ -88,7 +88,7 @@ const EventModal = (props: EventModalProps) => {
                             {response.status == 'accepted' && <FontAwesomeIcon icon={['far', 'check-circle']} color={successThemeColor} />}
                             {response.status == 'pending' && <FontAwesomeIcon icon={['far', 'question-circle']} />}
                             {response.status == 'declined' && <FontAwesomeIcon icon={faCircleXmark} color={failureThemeColor} />}
-                            <Text style={styles.responseText}>{response.user.first_name}</Text>
+                            <Text style={styles.responseText}>{response.user.display_name}</Text>
                         </View>
                     );
                 })}

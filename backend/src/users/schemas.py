@@ -19,7 +19,7 @@ class Role(BaseModel):
 
 class BaseUser(BaseModel):
     username: constr(regex="^[a-zA-Z0-9_-]+$", to_lower=True, strip_whitespace=True)
-    first_name: Union[str, None] = None
+    display_name: Union[str, None] = None
 
 
 class NewUser(BaseUser):
@@ -28,6 +28,7 @@ class NewUser(BaseUser):
 
 class UpdateUser(BaseModel):
     password: Union[str, None] = None
+    display_name: Union[str, None] = None
     is_trainer: Union[bool, None] = None
 
 
