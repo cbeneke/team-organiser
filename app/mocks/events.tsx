@@ -22,6 +22,26 @@ export function getEvent(token: string, id: string): Promise<Event> {
     });
 }
 
+export function putEventResponse(token: string, eventID: string, userID: string, status: string): Promise<Event> {
+    return new Promise((resolve, reject) => {
+        const event = mockEvents.find(event => event.id == eventID);
+        if (event != undefined) {
+            const response = event.responses.find(response => response.user.id == userID);
+            if (response != undefined) {
+                response.status = status;
+                setTimeout(() => {
+                    resolve(event);
+                }, 100);
+            } else {
+                reject('Response not found');
+            }
+        } else {
+            reject('Event not found');
+        }
+    });
+
+}
+
 const mockUsers = getRawUsers();
 const mockResponses = [
     {

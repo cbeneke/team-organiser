@@ -10,7 +10,7 @@ import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } fro
 import { Event } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
-// import { getEvent } from '../mocks/events';
+// import { getEvent, putEventResponse } from '../mocks/events';
 import { getEvent, putEventResponse } from '../helper/api';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
