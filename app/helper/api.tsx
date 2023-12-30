@@ -53,6 +53,32 @@ export function getEvents(token: string) {
     });
 }
 
-export function getEvent(id: string) {
-    // TODO: Implement me
+export function getEvent(token: string, id: string) {
+    return fetch('https://pb-api.rootlink.de/events/' + id, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+        },
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+export function putEventResponse(token: string, eventID: string, userID: string, status: string) {
+    return fetch('https://pb-api.rootlink.de/events/' + eventID + '/responses/' + userID  + '?' + new URLSearchParams({
+            status: status
+        }), {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+        },
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
 }

@@ -10,7 +10,8 @@ import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } fro
 import { Event } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
-import { getEvent } from '../mocks/events';
+// import { getEvent } from '../mocks/events';
+import { getEvent, putEventResponse } from '../helper/api';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
@@ -21,17 +22,22 @@ interface EventModalProps {
 
 const EventModal = (props: EventModalProps) => {
     const {eventUUID, setVisible} = props;
+    const auth = React.useContext(AuthContext);
 
     const queryClient = useQueryClient()
     async function fetchEvent() {
-        const res = await getEvent(eventUUID)
-        return res
+        try {
+            const res = await getEvent(auth.token, eventUUID)
+            return res
+        } catch (error) {
+            console.error(error)
+        }
     }
+
     async function updateEvent(event: Event) {
-        // TODO
-        console.log("Updating event: " + event.title)
-        return
+        await putEventResponse(auth.token, event.id, auth.user.id, currentResponse)
     }
+
     const query = useQuery({ queryKey: ['events', eventUUID], queryFn: fetchEvent, enabled: !!eventUUID })
     useEffect(() => {
         if (query.data?.responses) {
@@ -48,8 +54,7 @@ const EventModal = (props: EventModalProps) => {
         },
       })
 
-    const auth = React.useContext(AuthContext);
-    const strings = getStrings(auth.user?.language ? auth.user.language : 'en');
+    const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
 
     const [currentResponse, setCurrentResponse] = useState('pending');
 
@@ -83,7 +88,7 @@ const EventModal = (props: EventModalProps) => {
                             {response.status == 'accepted' && <FontAwesomeIcon icon={['far', 'check-circle']} color={successThemeColor} />}
                             {response.status == 'pending' && <FontAwesomeIcon icon={['far', 'question-circle']} />}
                             {response.status == 'declined' && <FontAwesomeIcon icon={faCircleXmark} color={failureThemeColor} />}
-                            <Text style={styles.responseText}>{response.user.firstname}</Text>
+                            <Text style={styles.responseText}>{response.user.first_name}</Text>
                         </View>
                     );
                 })}
