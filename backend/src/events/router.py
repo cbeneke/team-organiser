@@ -18,12 +18,12 @@ from src.events.dependencies import get_event
 from src.events.service import (
     add_event,
     update_event,
-    synchronise_invitees
+    synchronise_invitees,
+    respond_to_event,
 )
 from src.events.utils import parse_timerange
-from src.events.exceptions import EventResponseNotFound
 
-from src.users.dependencies import get_current_active_user, get_user
+from src.users.dependencies import get_current_active_user
 from src.users.exceptions import AccessDenied
 from src.users.schemas import ResponseUser
 from src.users.utils import is_admin_or_self
@@ -78,6 +78,7 @@ async def router_delete_event(
         raise AccessDenied
 
     db.delete(event)
+    db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
     db.commit()
 
     return {}
@@ -119,17 +120,6 @@ async def router_set_event_response(
     event: ResponseEvent = Depends(get_event),
     actor: ResponseUser = Depends(get_current_active_user),
 ):
-    response = (
-        db.query(DBEventResponses)
-        .filter(DBEventResponses.event == event, DBEventResponses.user == actor)
-        .first()
-    )
-    if not response:
-        raise EventResponseNotFound
-    
-    response.status = status
-
-    db.commit()
-    db.refresh(response)
+    response = respond_to_event(db, event, actor, status)
 
     return response

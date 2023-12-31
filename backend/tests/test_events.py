@@ -298,6 +298,7 @@ def test_update_invitees(client, admin, new_event):
 #  - Delete event as owner
 #  - Delete event as user
 #  - Delete invalid event ID
+#  - Ensure deleted events do not have responses anymore
 
 
 def test_admin_delete_event(client, admin, new_event):
@@ -364,6 +365,27 @@ def test_delete_event_not_found(client, admin):
     assert response.status_code == 404
     assert response_data["detail"] == "Event not found"
 
+
+def test_delete_event_responses(client, admin, new_event):
+    response = client.delete(
+        f"/events/{new_event['id']}",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+    response = client.get(
+        f"/users/{admin['id']}/events",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 0
 
 # Test Event Responses
 #  - Decline event as invited user
