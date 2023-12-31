@@ -40,7 +40,7 @@ class ResponseEvent(BaseEvent):
 
     class Config:
         orm_mode = True
-        
+
 class EventResponse(Response):
     event: ResponseEvent
 
@@ -51,4 +51,4 @@ class UpdateEvent(BaseModel):
     start_time: Union[datetime, None] = None
     end_time: Union[datetime, None] = None
     display_color: Union[str, None] = None
-    responses: list[Response] = None
+    invitees: list[ResponseUser] = None

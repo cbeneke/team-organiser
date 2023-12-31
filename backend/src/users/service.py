@@ -38,15 +38,15 @@ def add_user(username: str, password: str, db: Session):
     return user
 
 
-def update_user(user: DBUser, display_name: str, password: str, is_trainer: bool, db: Session):
+def update_user(user: DBUser, display_name: str, password: str, is_admin: bool, db: Session):
     if display_name:
         user.display_name = display_name
         
     if password:
         user.hashed_password = get_password_hash(password)
 
-    if is_trainer is not None:
-        if is_trainer:
+    if is_admin is not None:
+        if is_admin:
             user.roles = [get_db_role(RoleName.trainer, db)]
         else:
             user.roles = [get_db_role(RoleName.user, db)]

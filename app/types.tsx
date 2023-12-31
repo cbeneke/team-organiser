@@ -13,7 +13,7 @@ export interface User {
 export interface UpdateUser {
     display_name?: string | undefined;
     password?: string | undefined;
-    is_trainer?: boolean | undefined;
+    is_admin?: boolean | undefined;
 }
 
 export interface EventResponse {

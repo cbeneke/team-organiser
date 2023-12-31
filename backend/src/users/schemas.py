@@ -3,7 +3,6 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, constr
 from typing import Union
 
-
 class RoleName(str, Enum):
     trainer = "trainer"
     user = "user"
@@ -29,7 +28,7 @@ class NewUser(BaseUser):
 class UpdateUser(BaseModel):
     password: Union[str, None] = None
     display_name: Union[str, None] = None
-    is_trainer: Union[bool, None] = None
+    is_admin: Union[bool, None] = None
 
 
 class ResponseUser(BaseUser):
@@ -39,7 +38,6 @@ class ResponseUser(BaseUser):
 
     class Config:
         orm_mode = True
-
 
 class User(ResponseUser):
     hashed_password: str

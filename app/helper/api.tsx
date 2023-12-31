@@ -69,8 +69,8 @@ export function getEvent(token: string, id: string) {
     });
 }
 
-export function putEventResponse(token: string, eventID: string, userID: string, status: string) {
-    return fetch('https://pb-api.rootlink.de/events/' + eventID + '/responses/' + userID  + '?' + new URLSearchParams({
+export function putEventResponse(token: string, eventID: string, status: string) {
+    return fetch('https://pb-api.rootlink.de/events/' + eventID + '/respond?' + new URLSearchParams({
             status: status
         }), {
         method: 'PUT',

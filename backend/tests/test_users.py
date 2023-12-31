@@ -107,7 +107,7 @@ def test_get_user_not_found(client, admin):
 def test_admin_update_user(client, admin, new_user):
     response = client.put(
         f"/users/{new_user['id']}",
-        json={"is_trainer": True},
+        json={"is_admin": True},
         headers={"Authorization": f"Bearer {admin['token']}"},
     )
 
@@ -122,7 +122,7 @@ def test_admin_update_user(client, admin, new_user):
 def test_user_update_user(client, user, new_user):
     response = client.put(
         f"/users/{new_user['id']}",
-        json={"is_trainer": True},
+        json={"is_admin": True},
         headers={"Authorization": f"Bearer {user['token']}"},
     )
 
@@ -250,22 +250,10 @@ def test_list_events(client, user, new_event):
 
     assert response.status_code == 200
     assert len(response_data) == 1
-    assert response_data[0]["event"]["id"] == new_event["id"]
+    assert response_data[0]["id"] == new_event["id"]
 
 
-def test_list_events(client, user, new_user, new_event):
-    response = client.get(
-        f"/users/{new_user['id']}/events/",
-        headers={"Authorization": f"Bearer {user['token']}"},
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 403
-
-
-def test_list_events(client, user, new_user, new_event):
+def test_list_other_events(client, user, new_user):
     response = client.get(
         f"/users/{new_user['id']}/events/",
         headers={"Authorization": f"Bearer {user['token']}"},

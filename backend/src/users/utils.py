@@ -34,5 +34,10 @@ def is_admin_or_self(actor: DBUser, user: DBUser, db: Session):
     if actor.id == user.id:
         return True
 
+    return is_admin(actor, user, db)
+
+
+def is_admin(actor: DBUser, user: DBUser, db: Session):
+
     trainer_role = get_db_role(RoleName.trainer, db)
     return trainer_role in actor.roles

@@ -79,7 +79,6 @@ const Calendar = (props: Props) => {
   const auth = React.useContext(AuthContext);
 
   async function fetchEvents() {
-    console.log(auth.user.id)
     const userEvents = await getEvents(auth.token, auth.user.id);
     let events: Event[] = [];
     if (userEvents) {

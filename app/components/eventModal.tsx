@@ -34,7 +34,7 @@ const EventModal = (props: EventModalProps) => {
     }
 
     async function updateEvent(event: Event) {
-        await putEventResponse(auth.token, event.id, auth.user.id, currentResponse)
+        await putEventResponse(auth.token, event.id, currentResponse)
     }
 
     const query = useQuery({ queryKey: ['events', eventUUID], queryFn: fetchEvent, enabled: !!eventUUID })
