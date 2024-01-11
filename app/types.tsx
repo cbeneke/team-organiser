@@ -21,6 +21,14 @@ export interface EventResponse {
     status: string;
 }
 
+export interface NewEvent {
+    start_time: string;
+    end_time: string;
+    title: string;
+    description: string;
+    invitees: string[];
+}
+
 export interface Event {
     id: string;
     start_time: string;

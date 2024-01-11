@@ -9,6 +9,7 @@ import { getTheme, lightThemeColor, themeColor } from '../helper/theme';
 import { getEvents } from '../helper/api';
 import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
+import AddEventModal from '../components/addEventModal';
 import { AuthContext } from '../App';
 
 const leftArrowIcon = require('../assets/previous.png');
@@ -110,17 +111,22 @@ const Calendar = (props: Props) => {
     todayButtonTextColor: themeColor
   });
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const modalProps = useRef({
-    setVisible: setModalVisible,
+  const [eventModalVisible, setEventModalVisible] = useState(false);
+  const eventModalProps = useRef({
+    setVisible: setEventModalVisible,
     eventUUID: undefined,
+  })
+
+  const [addEventModalVisible, setAddEventModalVisible] = useState(true);
+  const addEventModalProps = useRef({
+    setVisible: setAddEventModalVisible,
   })
 
   const renderItem = useCallback(({item}: any) => {
     function openEventModal(id: string) {
       return () => {
-        modalProps.current.eventUUID = id;
-        setModalVisible(true);
+        eventModalProps.current.eventUUID = id;
+        setEventModalVisible(true);
       }
     }
     return <AgendaItem item={item} onPress={openEventModal(item.id)}/>;
@@ -131,12 +137,22 @@ const Calendar = (props: Props) => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
+        visible={eventModalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
+          setEventModalVisible(!eventModalVisible);
         }}
         >
-        {EventModal(modalProps.current)}
+        {EventModal(eventModalProps.current)}
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addEventModalVisible}
+        onRequestClose={() => {
+          setAddEventModalVisible(!addEventModalVisible);
+        }}
+        >
+        {AddEventModal(addEventModalProps.current)}
       </Modal>
       <CalendarProvider
         date={extractDate()}
