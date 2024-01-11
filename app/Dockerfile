@@ -1,15 +1,11 @@
 # pull base image
 FROM node:21-slim
 
-# set our node environment, either development or production
-# defaults to production, compose overrides this to development on build and run
-ARG NODE_ENV=production
-ENV NODE_ENV $NODE_ENV
+# set our node environment to production
+ENV NODE_ENV production
 
-# default to port 19006 for node, and 19001 and 19002 (tests) for debug
-ARG PORT=19006
-ENV PORT $PORT
-EXPOSE $PORT 19001 19002
+# expose port 19006 for node
+EXPOSE 19006
 
 # install global packages
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
@@ -25,8 +21,12 @@ RUN chown -R node:node /app
 RUN npm install
 
 # copy in our source code last, as it changes the most
-COPY . ./
-RUN chown -R node:node /app
+COPY --chown=node:node *.js *.tsx tsconfig.json app.json ./
+COPY --chown=node:node ./assets ./assets
+COPY --chown=node:node ./components ./components
+COPY --chown=node:node ./helper ./helper
+COPY --chown=node:node ./locales ./locales
+COPY --chown=node:node ./screens ./screens
 
 USER node
 
