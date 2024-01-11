@@ -17,6 +17,7 @@ def get_password_hash(password):
 def get_db_user(username: str, db: Session):
     return db.query(DBUser).filter(DBUser.username == username).first()
 
+
 def get_db_role(rolename: str, db: Session):
     return db.query(DBRoles).filter(DBRoles.name == rolename).first()
 
@@ -29,6 +30,5 @@ def is_admin_or_self(actor: DBUser, user: DBUser, db: Session):
 
 
 def is_admin(user: DBUser, db: Session):
-
     trainer_role = get_db_role(RoleName.trainer, db)
     return trainer_role in user.roles

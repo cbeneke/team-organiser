@@ -273,8 +273,11 @@ def test_update_event_not_found(client, admin):
     assert response.status_code == 404
     assert response_data["detail"] == "Event not found"
 
+
 def test_update_invitees(client, admin, new_event):
-    response = client.get("/users/me", headers={"Authorization": f"Bearer {admin['token']}"})
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
     response_data = response.json()
 
     response = client.put(
@@ -387,6 +390,7 @@ def test_delete_event_responses(client, admin, new_event):
     assert response.status_code == 200
     assert len(response_data) == 0
 
+
 # Test Event Responses
 #  - Decline event as invited user
 #  - Accept event as not-invited user
@@ -421,7 +425,9 @@ def test_user_decline_event(client, user, new_event):
 
 
 def test_user_accept_non_invited(client, admin, user, new_event):
-    response = client.get("/users/me", headers={"Authorization": f"Bearer {admin['token']}"})
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
     response_data = response.json()
 
     response = client.put(

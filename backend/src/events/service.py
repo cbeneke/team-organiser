@@ -8,7 +8,7 @@ from src.events.schemas import (
     NewEvent,
     ResponseType,
 )
-from src.events.exceptions import (EventDatesInvalid, EventResponseNotFound)
+from src.events.exceptions import EventDatesInvalid, EventResponseNotFound
 
 from src.users.models import DBUser
 from src.users.schemas import ResponseUser
@@ -75,7 +75,10 @@ def get_events(db: Session, start_time: datetime, end_time: datetime) -> Respons
         .all()
     )
 
-def respond_to_event(db: Session, event: ResponseEvent, user: ResponseUser, status: ResponseType):
+
+def respond_to_event(
+    db: Session, event: ResponseEvent, user: ResponseUser, status: ResponseType
+):
     response = (
         db.query(DBEventResponses)
         .filter(DBEventResponses.event == event, DBEventResponses.user == user)
@@ -83,7 +86,7 @@ def respond_to_event(db: Session, event: ResponseEvent, user: ResponseUser, stat
     )
     if not response:
         raise EventResponseNotFound
-    
+
     response.status = status
 
     db.commit()
@@ -91,13 +94,15 @@ def respond_to_event(db: Session, event: ResponseEvent, user: ResponseUser, stat
 
     return response
 
-def synchronise_invitees(db: Session, event: ResponseEvent, invitees: list[ResponseUser]):
+
+def synchronise_invitees(
+    db: Session, event: ResponseEvent, invitees: list[ResponseUser]
+):
     # Remove old invitees
     for response in event.responses:
         if response.user not in invitees:
             db.query(DBEventResponses).filter(
-                DBEventResponses.event == event,
-                DBEventResponses.user == response.user
+                DBEventResponses.event == event, DBEventResponses.user == response.user
             ).delete()
 
     # Add new invitees

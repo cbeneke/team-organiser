@@ -15,7 +15,6 @@ class BaseEvent(BaseModel):
     display_color: str
 
 
-
 class ResponseType(str, Enum):
     accepted = "accepted"
     declined = "declined"
@@ -29,6 +28,7 @@ class Response(BaseModel):
     class Config:
         orm_mode = True
 
+
 class NewEvent(BaseEvent):
     invitees: list[ResponseUser] = []
 
@@ -40,6 +40,7 @@ class ResponseEvent(BaseEvent):
 
     class Config:
         orm_mode = True
+
 
 class EventResponse(Response):
     event: ResponseEvent

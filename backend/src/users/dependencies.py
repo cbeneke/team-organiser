@@ -25,7 +25,7 @@ async def get_user(
 
     if user is None:
         raise UserNotFound
-    
+
     return user
 
 
@@ -36,7 +36,7 @@ async def get_current_user(
     user = get_db_user(username, db)
     if user is None:
         raise InvalidToken
-    
+
     return user
 
 

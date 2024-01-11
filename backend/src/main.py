@@ -8,10 +8,7 @@ import src.events.router as events
 
 app = fastapi.FastAPI()
 
-origins = [
-    "http://localhost:19006",
-    "https://pb.rootlink.de"
-]
+origins = ["http://localhost:19006", "https://pb.rootlink.de"]
 
 app.add_middleware(
     CORSMiddleware,

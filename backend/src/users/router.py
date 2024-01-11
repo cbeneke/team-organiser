@@ -12,11 +12,11 @@ from src.users.dependencies import (
     get_user,
 )
 from src.users.service import update_user
-from src.users.utils import (is_admin_or_self, is_admin)
+from src.users.utils import is_admin_or_self, is_admin
 from src.users.exceptions import AccessDenied
 
 from src.events.schemas import ResponseEvent
-from src.events.models import (DBEventResponses, DBEvents)
+from src.events.models import DBEventResponses, DBEvents
 
 
 router = APIRouter()
