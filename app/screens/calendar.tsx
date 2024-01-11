@@ -6,9 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import testIDs from '../testIDs';
 import AgendaItem from '../components/agendaItem';
 import { getTheme, lightThemeColor, themeColor } from '../helper/theme';
-import { getEvents } from '../mocks/events';
+import { getEvents } from '../helper/api';
 import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
+import { AuthContext } from '../App';
 
 const leftArrowIcon = require('../assets/previous.png');
 const rightArrowIcon = require('../assets/next.png');
@@ -36,10 +37,10 @@ function getAgendaItems(events: Event[]) {
 
   events.forEach(event => {
     // TODO: Make this more flexible (e.g. minutes in the events)
-    const dateString = extractDate(event.startTime);
-    const startHour = extractHour(event.startTime);
+    const dateString = extractDate(event.start_time);
+    const startHour = extractHour(event.start_time);
     // TODO: This does not work if the event spans multiple days
-    const duration = extractHour(event.endTime) - startHour;
+    const duration = extractHour(event.end_time) - startHour;
 
     const eventData = {
       id: event.id,
@@ -73,16 +74,23 @@ function getEventMarkers(items: AgendaSection[]) {
   return marked;
 }
 
-async function fetchEvents() {
-  const events = await getEvents();
-  const agendaItems = getAgendaItems(events);
-  const markedDays = getEventMarkers(agendaItems);
-
-  return {events, agendaItems, markedDays};
-}
-
 const Calendar = (props: Props) => {
   //const queryClient = useQueryClient()
+  const auth = React.useContext(AuthContext);
+
+  async function fetchEvents() {
+    const userEvents = await getEvents(auth.token, auth.user.id);
+    let events: Event[] = [];
+    if (userEvents) {
+      userEvents.forEach((userevent) => {
+        events.push(userevent.event);
+      })
+    }
+    const agendaItems = getAgendaItems(events);
+    const markedDays = getEventMarkers(agendaItems);
+  
+    return {events, agendaItems, markedDays};
+  }
 
   const {weekView} = props;
   const query = useQuery({queryKey: ['events'], queryFn: fetchEvents});

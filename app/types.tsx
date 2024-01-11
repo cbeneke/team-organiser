@@ -1,13 +1,19 @@
 export interface Token {
-    accessToken: string;
-    tokenType: string;
+    access_token: string;
+    token_type: string;
 }
 
 export interface User {
     id: string;
     username: string;
-    firstname: string;
+    display_name: string;
     language: string;
+}
+
+export interface UpdateUser {
+    display_name?: string | undefined;
+    password?: string | undefined;
+    is_admin?: boolean | undefined;
 }
 
 export interface EventResponse {
@@ -17,8 +23,8 @@ export interface EventResponse {
 
 export interface Event {
     id: string;
-    startTime: string;
-    endTime: string;
+    start_time: string;
+    end_time: string;
     title: string;
     description: string;
     responses: EventResponse[];

@@ -8,8 +8,6 @@ from src.database import get_db
 from src.users.models import DBUser
 from src.users.utils import (
     get_db_user,
-    get_db_user_by_id,
-    get_all_db_users,
     get_db_role,
 )
 from src.users.exceptions import UserInactive, UserNotFound, AccessDenied
@@ -19,20 +17,15 @@ from src.auth.dependencies import get_username_from_token
 from src.auth.exceptions import InvalidToken
 
 
-async def get_all_users(
-    db: Session = Depends(get_db),
-):
-    users = get_all_db_users(db)
-    return users
-
-
 async def get_user(
     user_id: UUID,
     db: Session = Depends(get_db),
 ):
-    user = get_db_user_by_id(user_id, db)
+    user = db.query(DBUser).get(user_id)
+
     if user is None:
         raise UserNotFound
+
     return user
 
 
@@ -43,6 +36,7 @@ async def get_current_user(
     user = get_db_user(username, db)
     if user is None:
         raise InvalidToken
+
     return user
 
 

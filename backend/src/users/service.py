@@ -3,13 +3,12 @@ from uuid import UUID
 
 from src.users.utils import (
     get_db_user,
-    get_db_user_by_id,
     get_password_hash,
     verify_password,
     get_db_role,
 )
 from src.users.models import DBUser
-from src.users.exceptions import UsernameAlreadyInUse, UserNotFound
+from src.users.exceptions import UsernameAlreadyInUse
 from src.users.schemas import RoleName
 
 
@@ -38,12 +37,17 @@ def add_user(username: str, password: str, db: Session):
     return user
 
 
-def update_user(user: DBUser, password: str, is_trainer: bool, db: Session):
+def update_user(
+    user: DBUser, display_name: str, password: str, is_admin: bool, db: Session
+):
+    if display_name:
+        user.display_name = display_name
+
     if password:
         user.hashed_password = get_password_hash(password)
 
-    if is_trainer is not None:
-        if is_trainer:
+    if is_admin is not None:
+        if is_admin:
             user.roles = [get_db_role(RoleName.trainer, db)]
         else:
             user.roles = [get_db_role(RoleName.user, db)]
@@ -52,12 +56,3 @@ def update_user(user: DBUser, password: str, is_trainer: bool, db: Session):
     db.commit()
     db.refresh(user)
     return user
-
-
-def delete_user(user_id: UUID, db: Session):
-    user = get_db_user_by_id(user_id, db)
-    if not user:
-        raise UserNotFound
-    db.delete(user)
-    db.commit()
-    return

@@ -18,12 +18,12 @@ from src.events.dependencies import get_event
 from src.events.service import (
     add_event,
     update_event,
-    set_responses,
-    construct_responses_from_invitees,
+    synchronise_invitees,
+    respond_to_event,
 )
 from src.events.utils import parse_timerange
 
-from src.users.dependencies import get_current_active_user, get_user
+from src.users.dependencies import get_current_active_user
 from src.users.exceptions import AccessDenied
 from src.users.schemas import ResponseUser
 from src.users.utils import is_admin_or_self
@@ -55,11 +55,7 @@ async def router_add_event(
     user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    invitees = event.invitees
     event = add_event(event, user, db)
-
-    responses = construct_responses_from_invitees(user, invitees)
-    set_responses(db, event, responses)
 
     return event
 
@@ -82,6 +78,7 @@ async def router_delete_event(
         raise AccessDenied
 
     db.delete(event)
+    db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
     db.commit()
 
     return {}
@@ -110,58 +107,19 @@ async def router_update_event(
         update.end_time,
         update.display_color,
     )
-    if update.responses:
-        set_responses(db, event, update.responses)
+    if update.invitees:
+        synchronise_invitees(db, event, update.invitees)
 
     return event
 
 
-@router.get("/{event_id}/responses/", response_model=list[Response])
-async def router_list_event_responses(
-    db: Session = Depends(get_db),
-    event: ResponseEvent = Depends(get_event),
-    actor: ResponseUser = Depends(get_current_active_user),
-):
-    responses = db.query(DBEventResponses).filter(DBEventResponses.event == event).all()
-
-    return responses
-
-
-@router.put("/{event_id}/responses/", response_model=list[Response])
-async def router_list_event_responses(
-    responses: list[Response],
-    db: Session = Depends(get_db),
-    event: ResponseEvent = Depends(get_event),
-    actor: ResponseUser = Depends(get_current_active_user),
-):
-    if not is_admin_or_self(actor, event.owner, db):
-        raise AccessDenied
-
-    set_responses(db, event, responses)
-
-    return responses
-
-
-@router.put("/{event_id}/responses/{user_id}", response_model=Union[Response, None])
+@router.put("/{event_id}/respond", response_model=Response)
 async def router_set_event_response(
     status: ResponseType,
     db: Session = Depends(get_db),
     event: ResponseEvent = Depends(get_event),
-    user: ResponseUser = Depends(get_user),
     actor: ResponseUser = Depends(get_current_active_user),
 ):
-    if not (user == actor or is_admin_or_self(actor, event.owner, db)):
-        raise AccessDenied
-
-    response = (
-        db.query(DBEventResponses)
-        .filter(DBEventResponses.event == event, DBEventResponses.user == user)
-        .first()
-    )
-    if response:
-        response.status = status
-
-        db.commit()
-        db.refresh(response)
+    response = respond_to_event(db, event, actor, status)
 
     return response

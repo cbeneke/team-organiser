@@ -15,18 +15,6 @@ class BaseEvent(BaseModel):
     display_color: str
 
 
-class NewEvent(BaseEvent):
-    invitees: list[ResponseUser] = []
-
-
-class ResponseEvent(BaseEvent):
-    id: UUID = Field(default_factory=uuid4)
-    owner: ResponseUser
-
-    class Config:
-        orm_mode = True
-
-
 class ResponseType(str, Enum):
     accepted = "accepted"
     declined = "declined"
@@ -36,6 +24,19 @@ class ResponseType(str, Enum):
 class Response(BaseModel):
     user: ResponseUser
     status: ResponseType
+
+    class Config:
+        orm_mode = True
+
+
+class NewEvent(BaseEvent):
+    invitees: list[ResponseUser] = []
+
+
+class ResponseEvent(BaseEvent):
+    id: UUID = Field(default_factory=uuid4)
+    owner: ResponseUser
+    responses: list[Response] = []
 
     class Config:
         orm_mode = True
@@ -51,4 +52,4 @@ class UpdateEvent(BaseModel):
     start_time: Union[datetime, None] = None
     end_time: Union[datetime, None] = None
     display_color: Union[str, None] = None
-    responses: list[Response] = None
+    invitees: list[ResponseUser] = None

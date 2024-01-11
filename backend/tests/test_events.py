@@ -183,6 +183,7 @@ def test_get_event_not_found(client, user):
 #  - Update event as user
 #  - Update event as owner
 #  - Update invalid event ID
+#  - Update invitees
 
 
 def test_admin_update_event(client, admin, new_event):
@@ -273,11 +274,34 @@ def test_update_event_not_found(client, admin):
     assert response_data["detail"] == "Event not found"
 
 
+def test_update_invitees(client, admin, new_event):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
+    response_data = response.json()
+
+    response = client.put(
+        f"/events/{new_event['id']}",
+        json={
+            "invitees": [response_data],
+        },
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert response_data["id"] == new_event["id"]
+    assert len(response_data["responses"]) == 1
+
+
 # Delete Event tests
 #  - Delete event as admin
 #  - Delete event as owner
 #  - Delete event as user
 #  - Delete invalid event ID
+#  - Ensure deleted events do not have responses anymore
 
 
 def test_admin_delete_event(client, admin, new_event):
@@ -345,50 +369,36 @@ def test_delete_event_not_found(client, admin):
     assert response_data["detail"] == "Event not found"
 
 
+def test_delete_event_responses(client, admin, new_event):
+    response = client.delete(
+        f"/events/{new_event['id']}",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+    response = client.get(
+        f"/users/{admin['id']}/events",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 0
+
+
 # Test Event Responses
-#  - List event responses
-#  - Update event responses as admin
-
-
-def test_get_event_responses(client, admin, new_event):
-    response = client.get(
-        f"/events/{new_event['id']}/responses",
-        headers={"Authorization": f"Bearer {admin['token']}"},
-    )
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 200
-    assert len(response_data) == 2  # Test Event has admin and user invites
-    assert response_data[0]["user"]["id"] == admin["id"]
-    assert response_data[0]["status"] == "accepted"
-    assert response_data[1]["status"] == "pending"
-
-
-def test_admin_update_event_responses(client, admin, new_event):
-    response = client.get(
-        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
-    )
-    admin_user = response.json()
-
-    response = client.put(
-        f"/events/{new_event['id']}/responses",
-        json=[{"user": admin_user, "status": "accepted"}],
-        headers={"Authorization": f"Bearer {admin['token']}"},
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 200
-    assert len(response_data) == 1
-    assert response_data[0]["user"]["id"] == admin_user["id"]
-    assert response_data[0]["status"] == "accepted"
+#  - Decline event as invited user
+#  - Accept event as not-invited user
 
 
 def test_user_decline_event(client, user, new_event):
     response = client.put(
-        f"/events/{new_event['id']}/responses/{user['id']}",
+        f"/events/{new_event['id']}/respond",
         params={"status": "declined"},
         headers={"Authorization": f"Bearer {user['token']}"},
     )
@@ -401,7 +411,7 @@ def test_user_decline_event(client, user, new_event):
     assert response_data["status"] == "declined"
 
     response = client.get(
-        f"/events/{new_event['id']}/responses",
+        f"/events/{new_event['id']}",
         headers={"Authorization": f"Bearer {user['token']}"},
     )
 
@@ -409,6 +419,38 @@ def test_user_decline_event(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 200
-    assert len(response_data) == 2  # Test Event has admin and user invites
-    assert response_data[1]["user"]["id"] == user["id"]
-    assert response_data[1]["status"] == "declined"
+    assert len(response_data["responses"]) == 2  # Test Event has admin and user invites
+    assert response_data["responses"][0]["user"]["id"] == user["id"]
+    assert response_data["responses"][0]["status"] == "declined"
+
+
+def test_user_accept_non_invited(client, admin, user, new_event):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
+    response_data = response.json()
+
+    response = client.put(
+        f"/events/{new_event['id']}",
+        json={
+            "invitees": [response_data],
+        },
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+    response = client.put(
+        f"/events/{new_event['id']}/respond",
+        params={"status": "accepted"},
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 404
+    assert response_data["detail"] == "User not invited to event"
