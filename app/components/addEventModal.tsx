@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, Pressable, View, TextInput, SafeAreaView } from 'react-native';
 import fontawesome from '@fortawesome/fontawesome'
 import { faQuestionCircle, faCheckCircle } from '@fortawesome/fontawesome-free-regular';
@@ -7,7 +7,7 @@ import { themeColor, lightThemeColor } from '../helper/theme';
 import { NewEvent } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
-import { putEvent } from '../helper/api';
+import { postEvent } from '../helper/api';
 
 fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
@@ -15,53 +15,92 @@ interface AddEventModalProps {
     setVisible: (visible: boolean) => void;
 }
 
-interface TextOptionProps {
+interface OptionProps {
     title: string,
+    value: any,
     callback?: (option: string) => void | undefined,
 }
 
-function TextOption (props: TextOptionProps) {
-    const {title, callback} = props;
-    
-    const [option, setOption] = useState('')
+function initDate(offsetHours: number) {
+    let date = new Date(Date.now());
+    date.setMilliseconds(0);
+    date.setSeconds(0);
+    date.setMinutes(0);
+    date.setHours(date.getHours() + offsetHours + 1);
+    return date.toISOString();
+}
 
-    function updateOption(){
-        if (callback != undefined) {
-            callback(option)
-        }
-    }
+function TextOption (props: OptionProps) {
+    const {title, value, callback} = props;
+
+    const [option, setOption] = useState(value);
 
     return (
         <SafeAreaView style={styles.optionView}>
             <Text style={styles.inputTitle}>{title}</Text>
             <TextInput
                 style={styles.input}
-                onChangeText={setOption}
-                onEndEditing={updateOption}
-                onSubmitEditing={updateOption}
+                // TODO This looks hacky, but works for now
+                onChangeText={(text) => {setOption(text); callback(text)}}
                 value={option}
             ></TextInput>
         </SafeAreaView>
     )
 }
 
-TextOption.defaultProps = {
-    initialValue: '',
-    callback: undefined,
-    isEditable: true,
-    isHiddenField: false,
-    textContentType: "none"
-}
+function TimeOption (props: OptionProps) {
+    const {title, value, callback} = props;
 
-function addEvent(token: string, event: NewEvent,) {
-    if (event) {
-        putEvent(token, event)
-    }
+    // Add the offset to the time to display it in local time
+    // Substract the offset from the time to store it in UTC
+    const timeZoneOffset = - new Date().getTimezoneOffset() / 60;
+
+    const [date, setDate] = useState(new Date(value).toISOString().split('T')[0]);
+
+    // time is displayed to the user and needs to be in local time
+    let timeDate = new Date(value)
+    timeDate.setHours(new Date(value).getHours() + timeZoneOffset)
+    const [time, setTime] = useState(timeDate.toISOString().split('T')[1].slice(0, -1));
+
+    return (
+        <SafeAreaView style={styles.optionView}>
+            <Text style={styles.inputTitle}>{title}</Text>
+            <input style={styles.input} type="date" value={date} onChange={(event) => {
+                setDate(event.target.value);
+                callback(date + 'T' + time + 'Z')
+            }}></input>
+            <input style={styles.input} type="time" value={time} onChange={(event) => {
+                setTime(event.target.value);
+                let isoDate = date
+                let isoTime = time
+                // TODO consider negative timeZoneOffset .. Berlin has 1 or 2 .. so fine for now
+                const eventHour = parseInt(event.target.value.split(':')[0])
+                if (eventHour > timeZoneOffset) {
+                    // TODO parseInt might return NaN if the user enters a non-numeric value - we use date-picker, so it shouldn't happen in the happy path
+                    isoTime = (eventHour - timeZoneOffset) + ':' + event.target.value.split(':')[1] + ':00.000';
+                } else {
+                    let newDate = new Date(date);
+                    newDate.setDate(newDate.getDate() - 1)
+                    isoDate = newDate.toISOString().split('T')[0];
+                }
+                callback(isoDate + 'T' + isoTime + 'Z')
+
+            }}></input>
+        </SafeAreaView>
+    )
 }
 
 const AddEventModal = (props: AddEventModalProps) => {
     const {setVisible} = props;
     const auth = React.useContext(AuthContext);
+    const newEventProps = {
+        title: "Test",
+        description: "Test",
+        start_time: initDate(0), // Initialise StartDate with upcoming hour
+        end_time: initDate(2), // Initialise EndDate with upcoming hour + 2
+        invitees: [],
+        display_color: "",
+    }
 
     const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
 
@@ -69,7 +108,7 @@ const AddEventModal = (props: AddEventModalProps) => {
         setVisible(false);
     };
 
-    const [newEvent, setNewEvent] = useState<NewEvent>();
+    const [newEvent, setNewEvent] = useState<NewEvent>(newEventProps);
 
     return (
         <View style={styles.modalView}>
@@ -80,14 +119,25 @@ const AddEventModal = (props: AddEventModalProps) => {
                 </Pressable>
             </View>
             <View style={styles.contentView}>
-                <TextOption title={strings.TITLE} callback={(title) => setNewEvent({...newEvent, title: title})} />
-                <TextOption title={strings.DESCRIPTION} callback={(description) => setNewEvent({...newEvent, description: description})} />
-                <TextOption title={strings.START_TIME} callback={(start_time) => setNewEvent({...newEvent, start_time: start_time})} />
-                <TextOption title={strings.END_TIME} callback={(end_time) => setNewEvent({...newEvent, end_time: end_time})} />
-                <TextOption title={strings.INVITEES} callback={(invitees) => setNewEvent({...newEvent, invitees: invitees.split(',')})} />
+                <TextOption
+                    title={strings.TITLE}
+                    value={newEvent.title}
+                    callback={(title) => setNewEvent({...newEvent, title: title})} />
+                <TextOption
+                    title={strings.DESCRIPTION}
+                    value={newEvent.description}
+                    callback={(description) => setNewEvent({...newEvent, description: description})} />
+                <TimeOption
+                    title={strings.START_TIME}
+                    value={newEvent.start_time}
+                    callback={(start_time) => setNewEvent({...newEvent, start_time: start_time})} />
+                <TimeOption
+                    title={strings.END_TIME}
+                    value={newEvent.end_time}
+                    callback={(end_time) => setNewEvent({...newEvent, end_time: end_time})} />
             </View>
             <View style={styles.buttonView}>
-                <Pressable style={styles.button} onPress={() => addEvent(auth.token, newEvent)}>
+                <Pressable style={styles.button} onPress={() => postEvent(auth.token, newEvent)}>
                     <Text style={styles.buttonText}>{strings.SAVE}</Text>
                 </Pressable>
             </View>

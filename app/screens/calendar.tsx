@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Modal } from 'react-native';
+import { StyleSheet, ScrollView, Modal, Pressable, Text } from 'react-native';
 import { ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar } from 'react-native-calendars';
 import { useQuery } from '@tanstack/react-query';
 
@@ -117,7 +117,7 @@ const Calendar = (props: Props) => {
     eventUUID: undefined,
   })
 
-  const [addEventModalVisible, setAddEventModalVisible] = useState(true);
+  const [addEventModalVisible, setAddEventModalVisible] = useState(false);
   const addEventModalProps = useRef({
     setVisible: setAddEventModalVisible,
   })
@@ -186,6 +186,10 @@ const Calendar = (props: Props) => {
           avoidDateUpdates
         />
       </CalendarProvider>
+      <Pressable
+        style={styles.addEventButton}
+        onPress={() => setAddEventModalVisible(true)}
+      ><Text style={styles.addEventText}>+</Text></Pressable>
     </ScrollView>
   );
 };
@@ -204,5 +208,21 @@ const styles = StyleSheet.create({
     backgroundColor: lightThemeColor,
     color: 'grey',
     textTransform: 'capitalize'
+  },
+  addEventButton: {
+    position: 'absolute',
+    bottom: 25,
+    right: 25,
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    backgroundColor: themeColor,
+    textAlign: 'center',
+    zIndex: 1,
+  },
+  addEventText: {
+    fontSize: 35,
+    color: 'white',
+    textAlign: 'center',
   }
 });
