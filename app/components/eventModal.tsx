@@ -112,7 +112,7 @@ const EventModal = (props: EventModalProps) => {
                 <Text>{query.data.description}</Text>
             </View>
             <Responses></Responses>
-            <View style={styles.responseView}>
+            <View style={styles.footerView}>
                 <Pressable
                     style={currentResponse == 'accepted' ? styles.currentResponseButton : styles.responseButton}
                     onPress={() => {updateResponse('accepted')}}
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     contentView: {
         margin: 20,
     },
-    responseView: {
+    footerView: {
         backgroundColor: lightThemeColor,
         flexDirection: "row",
         justifyContent: "space-around",

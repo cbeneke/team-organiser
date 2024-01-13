@@ -21,8 +21,8 @@ export default {
     ADD_EVENT: 'Add event',
     TITLE: 'Title',
     DESCRIPTION: 'Description',
-    START_TIME: 'Start time',
-    END_TIME: 'End time',
+    START_TIME: 'Start',
+    END_TIME: 'End',
     INVITEES: 'Invitees',
     SAVE: 'Save',
     ERRORS: {

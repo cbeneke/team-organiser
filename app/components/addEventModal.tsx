@@ -94,8 +94,8 @@ const AddEventModal = (props: AddEventModalProps) => {
     const {setVisible} = props;
     const auth = React.useContext(AuthContext);
     const newEventProps = {
-        title: "Test",
-        description: "Test",
+        title: "",  
+        description: "",
         start_time: initDate(0), // Initialise StartDate with upcoming hour
         end_time: initDate(2), // Initialise EndDate with upcoming hour + 2
         invitees: [],
@@ -105,6 +105,8 @@ const AddEventModal = (props: AddEventModalProps) => {
     const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
 
     const closeModal = () => {
+        // Reset View on closing the modal
+        setNewEvent(newEventProps);
         setVisible(false);
     };
 
@@ -136,7 +138,7 @@ const AddEventModal = (props: AddEventModalProps) => {
                     value={newEvent.end_time}
                     callback={(end_time) => setNewEvent({...newEvent, end_time: end_time})} />
             </View>
-            <View style={styles.buttonView}>
+            <View style={styles.footerView}>
                 <Pressable style={styles.button} onPress={() => postEvent(auth.token, newEvent)}>
                     <Text style={styles.buttonText}>{strings.SAVE}</Text>
                 </Pressable>
@@ -197,11 +199,13 @@ const styles = StyleSheet.create({
         padding: 10,
         flexGrow: 1,
     },
-    buttonView: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        paddingHorizontal: 20,
-        paddingBottom: 10,
+    footerView: {
+        backgroundColor: lightThemeColor,
+        flexDirection: "row",
+        justifyContent: "space-around",
+        padding: 10,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
     },
     button: {
         margin: 1,

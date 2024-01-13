@@ -21,8 +21,8 @@ export default {
     ADD_EVENT: 'Termin hinzufügen',
     TITLE: 'Titel',
     DESCRIPTION: 'Beschreibung',
-    START_TIME: 'Startzeit',
-    END_TIME: 'Endzeit',
+    START_TIME: 'Start',
+    END_TIME: 'Ende',
     INVITEES: 'Teilnehmer',
     SAVE: 'Speichern',
     ERRORS: {

@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Modal, Pressable, Text } from 'react-native';
+import { StyleSheet, ScrollView, Modal, Pressable, Text, View, TouchableWithoutFeedback } from 'react-native';
 import { ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar } from 'react-native-calendars';
 import { useQuery } from '@tanstack/react-query';
 
@@ -75,18 +75,44 @@ function getEventMarkers(items: AgendaSection[]) {
   return marked;
 }
 
+interface EventHandlerModalProps {
+  modal: any;
+  isVisible: boolean;
+  setVisible: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const EventHandlerModal = (props: EventHandlerModalProps) => {
+  const {modal, isVisible, setVisible} = props;
+
+  return (
+    <TouchableWithoutFeedback onPress={() => {
+      setVisible(false);
+    }}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+        onRequestClose={() => {
+          setVisible(false);
+        }}
+      >
+        {/* Overload the close Modal function to prevent closing the modal when clicking on objects within the modal */}
+        <TouchableWithoutFeedback onPress={() => {}}>
+          <View>
+            {modal}
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </TouchableWithoutFeedback>
+  )
+}
+
 const Calendar = (props: Props) => {
   //const queryClient = useQueryClient()
   const auth = React.useContext(AuthContext);
 
   async function fetchEvents() {
-    const userEvents = await getEvents(auth.token, auth.user.id);
-    let events: Event[] = [];
-    if (userEvents) {
-      userEvents.forEach((userevent) => {
-        events.push(userevent.event);
-      })
-    }
+    const events = await getEvents(auth.token, auth.user.id);
     const agendaItems = getAgendaItems(events);
     const markedDays = getEventMarkers(agendaItems);
   
@@ -133,27 +159,16 @@ const Calendar = (props: Props) => {
   }, []);
 
   return (
+    <View style={styles.mainContainer}>
     <ScrollView>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={eventModalVisible}
-        onRequestClose={() => {
-          setEventModalVisible(!eventModalVisible);
-        }}
-        >
-        {EventModal(eventModalProps.current)}
-      </Modal>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={addEventModalVisible}
-        onRequestClose={() => {
-          setAddEventModalVisible(!addEventModalVisible);
-        }}
-        >
-        {AddEventModal(addEventModalProps.current)}
-      </Modal>
+      <EventHandlerModal
+        modal={EventModal(eventModalProps.current)}
+        isVisible={eventModalVisible}
+        setVisible={setEventModalVisible}/>
+      <EventHandlerModal
+        modal={AddEventModal(addEventModalProps.current)}
+        isVisible={addEventModalVisible}
+        setVisible={setAddEventModalVisible}/>
       <CalendarProvider
         date={extractDate()}
         theme={todayBtnTheme.current}
@@ -186,17 +201,22 @@ const Calendar = (props: Props) => {
           avoidDateUpdates
         />
       </CalendarProvider>
-      <Pressable
-        style={styles.addEventButton}
-        onPress={() => setAddEventModalVisible(true)}
-      ><Text style={styles.addEventText}>+</Text></Pressable>
     </ScrollView>
+    <Pressable
+      style={styles.addEventButton}
+      onPress={() => setAddEventModalVisible(true)}
+    ><Text style={styles.addEventText}>+</Text></Pressable>
+  </View>
   );
 };
 
 export default Calendar;
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    position: 'relative',
+  },
   calendar: {
     paddingLeft: 20,
     paddingRight: 20
@@ -211,7 +231,7 @@ const styles = StyleSheet.create({
   },
   addEventButton: {
     position: 'absolute',
-    bottom: 25,
+    bottom: 15,
     right: 25,
     width: 50,
     height: 50,
@@ -219,6 +239,8 @@ const styles = StyleSheet.create({
     backgroundColor: themeColor,
     textAlign: 'center',
     zIndex: 1,
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.5,
   },
   addEventText: {
     fontSize: 35,
