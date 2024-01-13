@@ -109,14 +109,13 @@ const AddEventModal = (props: AddEventModalProps) => {
 
     async function saveEvent(token: string, event: NewEvent) {
         postEvent(token, event).then((response) => {
-            if (response) {
+            // An event ID is only generated for successful event creations
+            if (response && response.id) {
                 closeModal();
             } else {
-                console.log("Error while saving event: " + response)
                 setError(strings.ERRORS.EVENT_SAVE)
             }
         }).catch((error) => {
-            console.log("Error while saving event: " + error)
             setError(strings.ERRORS.EVENT_SAVE)
         });
     }
