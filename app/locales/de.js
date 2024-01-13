@@ -28,5 +28,6 @@ export default {
     ERRORS: {
         USERNAME_PASSWORD_WRONG: 'Nutzername oder Passwort falsch!',
         USERNAME_PASSWORD_EMPTY: 'Nutzername und Passwort dürfen nicht leer sein!',
+        EVENT_SAVE: 'Termin konnte nicht gespeichert werden!',
     }
 };

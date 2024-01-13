@@ -28,5 +28,6 @@ export default {
     ERRORS: {
         USERNAME_PASSWORD_WRONG: 'Username or password wrong!',
         USERNAME_PASSWORD_EMPTY: 'Username and password must not be empty!',
+        EVENT_SAVE: 'Event could not be saved!',
     }
 };

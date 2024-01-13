@@ -8,7 +8,7 @@ from src.events.schemas import (
     NewEvent,
     ResponseType,
 )
-from src.events.exceptions import EventDatesInvalid, EventResponseNotFound
+from src.events.exceptions import EventDatesInvalid, EventResponseNotFound, EventTitleInvalid
 
 from src.users.models import DBUser
 from src.users.schemas import ResponseUser
@@ -21,6 +21,9 @@ def add_event(
 ):
     if new.start_time >= new.end_time:
         raise EventDatesInvalid
+    
+    if new.title == "":
+        raise EventTitleInvalid
 
     event = DBEvents(
         title=new.title,

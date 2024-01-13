@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, Pressable, View, TextInput, SafeAreaView } from 'react-native';
-import fontawesome from '@fortawesome/fontawesome'
-import { faQuestionCircle, faCheckCircle } from '@fortawesome/fontawesome-free-regular';
 
 import { themeColor, lightThemeColor } from '../helper/theme';
 import { NewEvent } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
 import { postEvent } from '../helper/api';
-
-fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
 interface AddEventModalProps {
     setVisible: (visible: boolean) => void;
@@ -103,12 +99,27 @@ const AddEventModal = (props: AddEventModalProps) => {
     }
 
     const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
+    const [error, setError] = useState('');
 
     const closeModal = () => {
         // Reset View on closing the modal
         setNewEvent(newEventProps);
         setVisible(false);
     };
+
+    async function saveEvent(token: string, event: NewEvent) {
+        postEvent(token, event).then((response) => {
+            if (response) {
+                closeModal();
+            } else {
+                console.log("Error while saving event: " + response)
+                setError(strings.ERRORS.EVENT_SAVE)
+            }
+        }).catch((error) => {
+            console.log("Error while saving event: " + error)
+            setError(strings.ERRORS.EVENT_SAVE)
+        });
+    }
 
     const [newEvent, setNewEvent] = useState<NewEvent>(newEventProps);
 
@@ -138,8 +149,9 @@ const AddEventModal = (props: AddEventModalProps) => {
                     value={newEvent.end_time}
                     callback={(end_time) => setNewEvent({...newEvent, end_time: end_time})} />
             </View>
+            <Text style={styles.error}>{error}</Text>
             <View style={styles.footerView}>
-                <Pressable style={styles.button} onPress={() => postEvent(auth.token, newEvent)}>
+                <Pressable style={styles.button} onPress={async () => await saveEvent(auth.token, newEvent)}>
                     <Text style={styles.buttonText}>{strings.SAVE}</Text>
                 </Pressable>
             </View>
@@ -217,5 +229,10 @@ const styles = StyleSheet.create({
     buttonText: {
         textAlign: 'center',
         color: 'white',
+    },
+    error: {
+        textAlign: 'center',
+        color: 'red',
+        marginBottom: 10,
     },
 });
