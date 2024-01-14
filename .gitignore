@@ -1,3 +1,7 @@
+# Token
+scripts/.auth-token
+scripts/data/
+
 # IDEs
 .idea/
 .vscode/

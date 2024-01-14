@@ -25,6 +25,7 @@ export default {
     END_TIME: 'End',
     INVITEES: 'Invitees',
     SAVE: 'Save',
+    CONFIRM_DELETE_EVENT: 'Delete event?',
     ERRORS: {
         USERNAME_PASSWORD_WRONG: 'Username or password wrong!',
         USERNAME_PASSWORD_EMPTY: 'Username and password must not be empty!',

@@ -25,6 +25,7 @@ export default {
     END_TIME: 'Ende',
     INVITEES: 'Teilnehmer',
     SAVE: 'Speichern',
+    CONFIRM_DELETE_EVENT: 'Termin wirklich löschen?',
     ERRORS: {
         USERNAME_PASSWORD_WRONG: 'Nutzername oder Passwort falsch!',
         USERNAME_PASSWORD_EMPTY: 'Nutzername und Passwort dürfen nicht leer sein!',

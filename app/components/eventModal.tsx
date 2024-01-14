@@ -1,27 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, Pressable, View } from 'react-native';
-import fontawesome from '@fortawesome/fontawesome'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faQuestionCircle, faCheckCircle } from '@fortawesome/fontawesome-free-regular';
-import { faCircleXmark } from '@fortawesome/free-regular-svg-icons';
+import { faCircleXmark, faTrashCan, faQuestionCircle, faCheckCircle } from '@fortawesome/free-regular-svg-icons';
+import { faXmark } from '@fortawesome/free-solid-svg-icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } from '../helper/theme';
 import { Event } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
-import { getEvent, putEventResponse } from '../helper/api';
+import { getEvent, putEventResponse, deleteEvent } from '../helper/api';
 
-fontawesome.library.add(faQuestionCircle, faCheckCircle);
 
 interface EventModalProps {
     eventUUID?: string;
     setVisible: (visible: boolean) => void;
 }
 
+function humanReadableDate(date: string) {
+    const dateObj = new Date(date);
+    const timeString = dateObj.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    const dateString = dateObj.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    return timeString + ' (' + dateString + ')';
+}
+
 const EventModal = (props: EventModalProps) => {
     const {eventUUID, setVisible} = props;
     const auth = React.useContext(AuthContext);
+    const [error, setError] = useState('');
 
     const queryClient = useQueryClient()
     async function fetchEvent() {
@@ -35,6 +41,17 @@ const EventModal = (props: EventModalProps) => {
 
     async function updateEvent(event: Event) {
         await putEventResponse(auth.token, event.id, currentResponse)
+    }
+
+    async function removeEvent(event: Event) {
+        if (window.confirm(strings.CONFIRM_DELETE_EVENT)) {
+            deleteEvent(auth.token, event).then((response) => {
+                queryClient.invalidateQueries({ queryKey: ['events'] })
+                closeModal();
+            }).catch((error) => {
+                setError(strings.ERRORS.EVENT_DELETE)
+            });
+        }
     }
 
     const query = useQuery({ queryKey: ['events', eventUUID], queryFn: fetchEvent, enabled: !!eventUUID })
@@ -84,8 +101,8 @@ const EventModal = (props: EventModalProps) => {
                 {query.data?.responses.map((response, index) => {
                     return (
                         <View key={index} style={styles.response}>
-                            {response.status == 'accepted' && <FontAwesomeIcon icon={['far', 'check-circle']} color={successThemeColor} />}
-                            {response.status == 'pending' && <FontAwesomeIcon icon={['far', 'question-circle']} />}
+                            {response.status == 'accepted' && <FontAwesomeIcon icon={faCheckCircle} color={successThemeColor} />}
+                            {response.status == 'pending' && <FontAwesomeIcon icon={faQuestionCircle} />}
                             {response.status == 'declined' && <FontAwesomeIcon icon={faCircleXmark} color={failureThemeColor} />}
                             <Text style={styles.responseText}>{response.user.display_name}</Text>
                         </View>
@@ -104,14 +121,28 @@ const EventModal = (props: EventModalProps) => {
         <View style={styles.modalView}>
             <View style={styles.headerView}>
                 <Text style={styles.header}>{query.data.title}</Text>
-                <Pressable style={styles.closeButton} onPress={closeModal}>
-                    <Text>X</Text>
-                </Pressable>
+                <View style={styles.buttonGroup}>
+                    <Pressable style={styles.headerButton} onPress={async () => {await removeEvent(query.data)}}>
+                        <FontAwesomeIcon icon={faTrashCan} />
+                    </Pressable>
+                    <Pressable style={styles.headerButton} onPress={closeModal}>
+                        <FontAwesomeIcon icon={faXmark} />
+                    </Pressable>
+                </View>
             </View>
-            <View style={styles.contentView}>
-                <Text>{query.data.description}</Text>
+            <View style={styles.contentsView}>
+                <View style={styles.contentView}>
+                    <Text style={styles.contentHeader}>{strings.DESCRIPTION}:</Text><Text style={styles.content}>{query.data.description}</Text>
+                </View>
+                <View style={styles.contentView}>
+                    <Text style={styles.contentHeader}>{strings.START_TIME}:</Text><Text style={styles.content}>{humanReadableDate(query.data.start_time)}</Text>
+                </View>
+                <View style={styles.contentView}>
+                    <Text style={styles.contentHeader}>{strings.END_TIME}:</Text><Text style={styles.content}>{humanReadableDate(query.data.end_time)}</Text>
+                </View>
             </View>
             <Responses></Responses>
+            <Text style={styles.error}>{error}</Text>
             <View style={styles.footerView}>
                 <Pressable
                     style={currentResponse == 'accepted' ? styles.currentResponseButton : styles.responseButton}
@@ -162,13 +193,27 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: "center",
     },
-    closeButton: {
-        textAlign: "center",
-        paddingLeft: 20,
-        paddingRight: 20,
+    buttonGroup: {
+        flexDirection: "row",
+        paddingHorizontal: 10,
+    },
+    headerButton: {
+        padding: 10,
+    },
+    contentsView: {
+        margin: 20,
+        marginBottom: 0,
     },
     contentView: {
-        margin: 20,
+        flex: 1,
+        flexDirection: 'row',
+    },
+    contentHeader: {
+        fontWeight: 'bold',
+        width: 140,
+    },
+    content: {
+        flexGrow: 1,
     },
     footerView: {
         backgroundColor: lightThemeColor,
@@ -207,5 +252,10 @@ const styles = StyleSheet.create({
     responseText: {
         marginLeft: 5,
         marginVertical: 1,
+    },
+    error: {
+        textAlign: 'center',
+        color: 'red',
+        marginBottom: 10,
     },
 });
