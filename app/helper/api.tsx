@@ -37,8 +37,18 @@ export function getUser(id: string) {
     // TODO: Implement me
 }
 
-export function getUsers() {
-    // TODO: Implement me
+export function getUsers(token: string) {
+    return fetch('https://pb-api.rootlink.de/users/', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+        },
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
 }
 
 export function getEvents(token: string, userID: string) {
