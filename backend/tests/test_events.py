@@ -120,6 +120,7 @@ def test_list_invalid_dates(client, user, new_event):
 #  - Add new event
 #  - Add new event with explicit owner invitation
 
+
 def test_add_event(client, user):
     response = client.post(
         "/events/",
@@ -148,6 +149,7 @@ def test_add_event(client, user):
     assert response_data["owner"]["id"] == user["id"]
     assert len(response_data["responses"]) == 1
 
+
 def test_add_event_owner_deduplicatoin(client, user):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
@@ -175,6 +177,7 @@ def test_add_event_owner_deduplicatoin(client, user):
     assert response.status_code == 201
     assert "id" in response_data
     assert len(response_data["responses"]) == 1
+
 
 # Get Event tests
 #  - Get valid event ID
