@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from src.users.models import DBUser, DBRoles
-from src.users.schemas import RoleName
+from src.users.schemas import RoleName, ResponseUser
 from src.auth.constants import pwd_context
 
 
@@ -22,13 +22,17 @@ def get_db_role(rolename: str, db: Session):
     return db.query(DBRoles).filter(DBRoles.name == rolename).first()
 
 
-def is_admin_or_self(actor: DBUser, user: DBUser, db: Session):
+def is_admin_or_self(actor: ResponseUser, user: ResponseUser, db: Session):
     if actor.id == user.id:
         return True
 
     return is_admin(actor, db)
 
 
-def is_admin(user: DBUser, db: Session):
+def is_admin(user: ResponseUser, db: Session):
     trainer_role = get_db_role(RoleName.trainer, db)
     return trainer_role in user.roles
+
+
+def is_user_in_list(user: ResponseUser, users: list[ResponseUser]) -> bool:
+    return any(user.id == u.id for u in users)

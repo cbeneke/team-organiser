@@ -118,7 +118,7 @@ def test_list_invalid_dates(client, user, new_event):
 
 # Add Event tests
 #  - Add new event
-
+#  - Add new event with explicit owner invitation
 
 def test_add_event(client, user):
     response = client.post(
@@ -146,7 +146,35 @@ def test_add_event(client, user):
     assert response_data["end_time"] == "2023-01-01T13:00:00"
     assert response_data["display_color"] == "#000000"
     assert response_data["owner"]["id"] == user["id"]
+    assert len(response_data["responses"]) == 1
 
+def test_add_event_owner_deduplicatoin(client, user):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
+    )
+    user_object = response.json()
+
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Test Event",
+            "description": "Test Description",
+            "start_time": "2023-01-01T12:00:00",
+            "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
+            "invitees": [user_object],
+        },
+        headers={
+            "content-type": "application/json",
+            "Authorization": f"Bearer {user['token']}",
+        },
+    )
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 201
+    assert "id" in response_data
+    assert len(response_data["responses"]) == 1
 
 # Get Event tests
 #  - Get valid event ID
