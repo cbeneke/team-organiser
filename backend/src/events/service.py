@@ -8,10 +8,15 @@ from src.events.schemas import (
     NewEvent,
     ResponseType,
 )
-from src.events.exceptions import EventDatesInvalid, EventResponseNotFound
+from src.events.exceptions import (
+    EventDatesInvalid,
+    EventResponseNotFound,
+    EventTitleInvalid,
+)
 
 from src.users.models import DBUser
 from src.users.schemas import ResponseUser
+from src.users.utils import is_user_in_list
 
 
 def add_event(
@@ -21,6 +26,9 @@ def add_event(
 ):
     if new.start_time >= new.end_time:
         raise EventDatesInvalid
+
+    if new.title == "":
+        raise EventTitleInvalid
 
     event = DBEvents(
         title=new.title,
@@ -35,7 +43,7 @@ def add_event(
     db.commit()
     db.refresh(event)
 
-    if owner not in new.invitees:
+    if not is_user_in_list(owner, new.invitees):
         new.invitees.append(owner)
 
     synchronise_invitees(db, event, new.invitees)
@@ -100,7 +108,7 @@ def synchronise_invitees(
 ):
     # Remove old invitees
     for response in event.responses:
-        if response.user not in invitees:
+        if not is_user_in_list(response.user, invitees):
             db.query(DBEventResponses).filter(
                 DBEventResponses.event == event, DBEventResponses.user == response.user
             ).delete()
@@ -108,7 +116,7 @@ def synchronise_invitees(
     # Add new invitees
     current_invitees = [response.user for response in event.responses]
     for invitee in invitees:
-        if invitee not in current_invitees:
+        if not is_user_in_list(invitee, current_invitees):
             db_response = DBEventResponses(
                 event_id=event.id,
                 user_id=invitee.id,

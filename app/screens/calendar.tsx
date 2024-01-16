@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Modal } from 'react-native';
+import { StyleSheet, ScrollView, Modal, Pressable, Text, View, TouchableWithoutFeedback } from 'react-native';
 import { ExpandableCalendar, AgendaList, CalendarProvider, WeekCalendar } from 'react-native-calendars';
 import { useQuery } from '@tanstack/react-query';
 
@@ -9,6 +9,8 @@ import { getTheme, lightThemeColor, themeColor } from '../helper/theme';
 import { getEvents } from '../helper/api';
 import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
+import AddEventModal from '../components/addEventModal';
+import EditEventModal from '../components/editEventModal';
 import { AuthContext } from '../App';
 
 const leftArrowIcon = require('../assets/previous.png');
@@ -74,18 +76,44 @@ function getEventMarkers(items: AgendaSection[]) {
   return marked;
 }
 
+interface EventHandlerModalProps {
+  modal: any;
+  isVisible: boolean;
+  setVisible: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const EventHandlerModal = (props: EventHandlerModalProps) => {
+  const {modal, isVisible, setVisible} = props;
+
+  return (
+    <TouchableWithoutFeedback onPress={() => {
+      setVisible(false);
+    }}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+        onRequestClose={() => {
+          setVisible(false);
+        }}
+      >
+        {/* Overload the close Modal function to prevent closing the modal when clicking on objects within the modal */}
+        <TouchableWithoutFeedback onPress={() => {}}>
+          <View>
+            {modal}
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </TouchableWithoutFeedback>
+  )
+}
+
 const Calendar = (props: Props) => {
   //const queryClient = useQueryClient()
   const auth = React.useContext(AuthContext);
 
   async function fetchEvents() {
-    const userEvents = await getEvents(auth.token, auth.user.id);
-    let events: Event[] = [];
-    if (userEvents) {
-      userEvents.forEach((userevent) => {
-        events.push(userevent.event);
-      })
-    }
+    const events = await getEvents(auth.token, auth.user.id);
     const agendaItems = getAgendaItems(events);
     const markedDays = getEventMarkers(agendaItems);
   
@@ -110,34 +138,50 @@ const Calendar = (props: Props) => {
     todayButtonTextColor: themeColor
   });
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const modalProps = useRef({
-    setVisible: setModalVisible,
+  const [editEventModalVisible, setEditEventModalVisible] = useState(false);
+  const editEventModalProps = useRef({
+    setVisible: setEditEventModalVisible,
     eventUUID: undefined,
+  })
+  
+  const [eventModalVisible, setEventModalVisible] = useState(false);
+  const eventModalProps = useRef({
+    setVisible: setEventModalVisible,
+    eventUUID: undefined,
+    setEditVisible: setEditEventModalVisible,
+  })
+
+  const [addEventModalVisible, setAddEventModalVisible] = useState(false);
+  const addEventModalProps = useRef({
+    setVisible: setAddEventModalVisible,
   })
 
   const renderItem = useCallback(({item}: any) => {
     function openEventModal(id: string) {
       return () => {
-        modalProps.current.eventUUID = id;
-        setModalVisible(true);
+        eventModalProps.current.eventUUID = id;
+        editEventModalProps.current.eventUUID = id;
+        setEventModalVisible(true);
       }
     }
     return <AgendaItem item={item} onPress={openEventModal(item.id)}/>;
   }, []);
 
   return (
+    <View style={styles.mainContainer}>
     <ScrollView>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-        >
-        {EventModal(modalProps.current)}
-      </Modal>
+      <EventHandlerModal
+        modal={EventModal(eventModalProps.current)}
+        isVisible={eventModalVisible}
+        setVisible={setEventModalVisible}/>
+      <EventHandlerModal
+        modal={AddEventModal(addEventModalProps.current)}
+        isVisible={addEventModalVisible}
+        setVisible={setAddEventModalVisible}/>
+      <EventHandlerModal
+        modal={EditEventModal(editEventModalProps.current)}
+        isVisible={editEventModalVisible}
+        setVisible={setEditEventModalVisible}/>
       <CalendarProvider
         date={extractDate()}
         theme={todayBtnTheme.current}
@@ -171,12 +215,21 @@ const Calendar = (props: Props) => {
         />
       </CalendarProvider>
     </ScrollView>
+    <Pressable
+      style={styles.addEventButton}
+      onPress={() => setAddEventModalVisible(true)}
+    ><Text style={styles.addEventText}>+</Text></Pressable>
+  </View>
   );
 };
 
 export default Calendar;
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    position: 'relative',
+  },
   calendar: {
     paddingLeft: 20,
     paddingRight: 20
@@ -188,5 +241,23 @@ const styles = StyleSheet.create({
     backgroundColor: lightThemeColor,
     color: 'grey',
     textTransform: 'capitalize'
+  },
+  addEventButton: {
+    position: 'absolute',
+    bottom: 15,
+    right: 25,
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    backgroundColor: themeColor,
+    textAlign: 'center',
+    zIndex: 1,
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.5,
+  },
+  addEventText: {
+    fontSize: 35,
+    color: 'white',
+    textAlign: 'center',
   }
 });

@@ -1,4 +1,4 @@
-import { UpdateUser } from '../types';
+import { Event, NewEvent, UpdateUser, UpdateEvent } from '../types';
 
 export function postLogin(username: string, password: string) {
     return fetch('https://pb-api.rootlink.de/auth/login', {
@@ -37,8 +37,18 @@ export function getUser(id: string) {
     // TODO: Implement me
 }
 
-export function getUsers() {
-    // TODO: Implement me
+export function getUsers(token: string) {
+    return fetch('https://pb-api.rootlink.de/users/', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+        },
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
 }
 
 export function getEvents(token: string, userID: string) {
@@ -94,6 +104,52 @@ export function putUser(token: string, userID: string, update: UpdateUser) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(update)
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+export function postEvent(token: string, event: NewEvent) {
+    return fetch('https://pb-api.rootlink.de/events/', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event)
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+export function putEvent(token: string, eventID: string, event: UpdateEvent) {
+    return fetch('https://pb-api.rootlink.de/events/' + eventID, {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event)
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+export function deleteEvent(token: string, event: Event) {
+    return fetch('https://pb-api.rootlink.de/events/' + event.id, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+        },
     })
     .then((response) => response.json())
     .catch((error) => {

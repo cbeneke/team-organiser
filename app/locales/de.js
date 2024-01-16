@@ -18,8 +18,18 @@ export default {
         FORGOT_PASSWORD: 'Passwort vergessen?',
         REGISTER: 'Noch keinen Account? Registrieren',
     },
+    ADD_EVENT: 'Termin hinzufügen',
+    EDIT_EVENT: 'Termin bearbeiten',
+    TITLE: 'Titel',
+    DESCRIPTION: 'Beschreibung',
+    START_TIME: 'Start',
+    END_TIME: 'Ende',
+    INVITEES: 'Teilnehmer',
+    SAVE: 'Speichern',
+    CONFIRM_DELETE_EVENT: 'Termin wirklich löschen?',
     ERRORS: {
         USERNAME_PASSWORD_WRONG: 'Nutzername oder Passwort falsch!',
         USERNAME_PASSWORD_EMPTY: 'Nutzername und Passwort dürfen nicht leer sein!',
+        EVENT_SAVE: 'Termin konnte nicht gespeichert werden!',
     }
 };

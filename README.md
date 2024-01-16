@@ -38,7 +38,7 @@ Create a virtual Env with Python 3.9 and install the requirements.txt. If you ar
                 "--reload"
             ],
 [...]
-            "cwd": "/Users/lisa/repositories/github.com/lisa-maria-maker/point-blank/backend"
+            "cwd": "${workspaceFolder}/backend",
         }
 ```
 

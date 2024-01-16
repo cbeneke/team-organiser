@@ -21,6 +21,15 @@ export interface EventResponse {
     status: string;
 }
 
+export interface NewEvent {
+    start_time: string;
+    end_time: string;
+    title: string;
+    description: string;
+    invitees: string[];
+    display_color: string;
+}
+
 export interface Event {
     id: string;
     start_time: string;
@@ -28,6 +37,15 @@ export interface Event {
     title: string;
     description: string;
     responses: EventResponse[];
+}
+
+export interface UpdateEvent {
+    start_time?: string | undefined;
+    end_time?: string | undefined;
+    title?: string | undefined;
+    description?: string | undefined;
+    invitees?: string[] | undefined;
+    display_color?: string | undefined;
 }
 
 export interface AgendaEvent {
