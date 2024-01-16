@@ -1,6 +1,27 @@
-# point-blank
-Point.Blank App
+# Team Organiser
 
+Simple Service for small teams to organise regular events (e.g. Trainings).
+
+# Development Status
+
+This App is under development and supports very limited set of services. The
+backend is intended to be used in a self-hosted manner and not provided as a
+service.
+
+Current Status:
+- [x] Backend
+- [x] Web View
+- [ ] Android App
+- [ ] iOS App
+
+Feature Status:
+- [x] Login
+- [ ] Self-Register
+- [x] Calendar view
+- [x] Profile Self-Management
+- [ ] Admin User Management
+- [ ] Team-shared Notes
+- [ ] Team-shared Video Storage
 
 # Backend
 
