@@ -10,6 +10,7 @@ import { getEvents } from '../helper/api';
 import { Event, AgendaSection } from '../types';
 import EventModal from '../components/eventModal';
 import AddEventModal from '../components/addEventModal';
+import EditEventModal from '../components/editEventModal';
 import { AuthContext } from '../App';
 
 const leftArrowIcon = require('../assets/previous.png');
@@ -137,10 +138,17 @@ const Calendar = (props: Props) => {
     todayButtonTextColor: themeColor
   });
 
+  const [editEventModalVisible, setEditEventModalVisible] = useState(false);
+  const editEventModalProps = useRef({
+    setVisible: setEditEventModalVisible,
+    eventUUID: undefined,
+  })
+  
   const [eventModalVisible, setEventModalVisible] = useState(false);
   const eventModalProps = useRef({
     setVisible: setEventModalVisible,
     eventUUID: undefined,
+    setEditVisible: setEditEventModalVisible,
   })
 
   const [addEventModalVisible, setAddEventModalVisible] = useState(false);
@@ -152,6 +160,7 @@ const Calendar = (props: Props) => {
     function openEventModal(id: string) {
       return () => {
         eventModalProps.current.eventUUID = id;
+        editEventModalProps.current.eventUUID = id;
         setEventModalVisible(true);
       }
     }
@@ -169,6 +178,10 @@ const Calendar = (props: Props) => {
         modal={AddEventModal(addEventModalProps.current)}
         isVisible={addEventModalVisible}
         setVisible={setAddEventModalVisible}/>
+      <EventHandlerModal
+        modal={EditEventModal(editEventModalProps.current)}
+        isVisible={editEventModalVisible}
+        setVisible={setEditEventModalVisible}/>
       <CalendarProvider
         date={extractDate()}
         theme={todayBtnTheme.current}

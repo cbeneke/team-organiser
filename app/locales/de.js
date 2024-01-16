@@ -19,6 +19,7 @@ export default {
         REGISTER: 'Noch keinen Account? Registrieren',
     },
     ADD_EVENT: 'Termin hinzufügen',
+    EDIT_EVENT: 'Termin bearbeiten',
     TITLE: 'Titel',
     DESCRIPTION: 'Beschreibung',
     START_TIME: 'Start',

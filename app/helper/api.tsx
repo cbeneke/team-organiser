@@ -127,8 +127,20 @@ export function postEvent(token: string, event: NewEvent) {
     });
 }
 
-export function updateEvent(token: string, eventID: string, event: UpdateEvent) {
-    // TODO: Implement me
+export function putEvent(token: string, eventID: string, event: UpdateEvent) {
+    return fetch('https://pb-api.rootlink.de/events/' + eventID, {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event)
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+        console.error(error);
+    });
 }
 
 export function deleteEvent(token: string, event: Event) {

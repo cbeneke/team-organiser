@@ -19,6 +19,7 @@ export default {
         REGISTER: 'Don\'t have an account? Register',
     },
     ADD_EVENT: 'Add event',
+    EDIT_EVENT: 'Edit event',
     TITLE: 'Title',
     DESCRIPTION: 'Description',
     START_TIME: 'Start',

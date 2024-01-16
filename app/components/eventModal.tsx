@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, Pressable, View } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircleXmark, faTrashCan, faQuestionCircle, faCheckCircle } from '@fortawesome/free-regular-svg-icons';
-import { faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPencil } from '@fortawesome/free-solid-svg-icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { successThemeColor, failureThemeColor, lightThemeColor, themeColor } from '../helper/theme';
@@ -15,6 +15,7 @@ import { getEvent, putEventResponse, deleteEvent } from '../helper/api';
 interface EventModalProps {
     eventUUID?: string;
     setVisible: (visible: boolean) => void;
+    setEditVisible: (visible: boolean) => void;
 }
 
 function humanReadableDate(date: string) {
@@ -25,7 +26,7 @@ function humanReadableDate(date: string) {
 }
 
 const EventModal = (props: EventModalProps) => {
-    const {eventUUID, setVisible} = props;
+    const {eventUUID, setVisible, setEditVisible} = props;
     const auth = React.useContext(AuthContext);
     const [error, setError] = useState('');
 
@@ -78,6 +79,11 @@ const EventModal = (props: EventModalProps) => {
         setVisible(false);
     };
 
+    const openEditModal = () => {
+        setVisible(false);
+        setEditVisible(true);
+    };
+
     const updateResponse = (status: string) => {
         setCurrentResponse(status);
         query.data.responses = query.data.responses.map(response => {
@@ -122,6 +128,9 @@ const EventModal = (props: EventModalProps) => {
             <View style={styles.headerView}>
                 <Text style={styles.header}>{query.data.title}</Text>
                 <View style={styles.buttonGroup}>
+                    <Pressable style={styles.headerButton} onPress={openEditModal}>
+                        <FontAwesomeIcon icon={faPencil} />
+                    </Pressable>
                     <Pressable style={styles.headerButton} onPress={async () => {await removeEvent(query.data)}}>
                         <FontAwesomeIcon icon={faTrashCan} />
                     </Pressable>
