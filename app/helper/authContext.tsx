@@ -1,7 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
-
 import { postLogin, getUsersMe } from '../helper/api';
+import * as SecureStore from 'expo-secure-store';
+import localstorage from '@react-native-async-storage/async-storage';
 
 export function handleAuthAction(prevState, action) {
     switch (action.type) {
@@ -37,6 +37,12 @@ export async function handleSignIn(username, password) {
     return {user: null, token: null}
   }
 
+  try {
+    await storeCredentials(token);
+  } catch (e) {
+    // Storing failed, but we have a token, so we can continue
+  }
+
   return {user: user, token: token}
 }
 
@@ -46,26 +52,52 @@ export const initialAuthContext = {
   error: '',
 }
 
+
 export async function getStoredCredentials() {
-
-  // TODO Implement store retrieval for web
-  if (Platform.OS === 'web') {
-    return {user: null, token: null}
-  }
-
   let token;
 
   try {
-    token = await SecureStore.getItemAsync('userToken');
+    if (Platform.OS === 'web') {
+      token = await localstorage.getItem('userToken');
+    } else {
+      token = await SecureStore.getItemAsync('userToken');
+    }
   } catch (e) {
     // Restoring token failed
     return {user: null, token: null}
   }
 
   const response = await getUsersMe(token)
-  if (response.status == 200) {
-    return {user: response.data, token: token}
+  if (response) {
+    return {user: response, token: token}
   } else {
+    await removeStoredCredentials();
     return {user: null, token: null}
+  }
+};
+
+export async function storeCredentials(token) {
+  try {
+    if (Platform.OS === 'web') {
+      token = await localstorage.setItem('userToken', token);
+    } else {
+      token = await SecureStore.setItemAsync('userToken', token);
+    }
+  } catch (e) {
+      // Saving token failed
+      console.log("Failed to store token securely: " + e)
+  }
+};
+
+export async function removeStoredCredentials() {
+  try {
+    if (Platform.OS === 'web') {
+      await localstorage.removeItem('userToken');
+    } else {
+      await SecureStore.deleteItemAsync('userToken');
+    }
+  } catch (e) {
+      // Saving token failed
+      console.log("Failed to store token securely: " + e)
   }
 };

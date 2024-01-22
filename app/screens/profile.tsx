@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import {
-    StyleSheet, Text, View, TextInput, ScrollView, SafeAreaView
+    StyleSheet, Text, View, TextInput, ScrollView, SafeAreaView, Pressable
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { lightThemeColor, themeColor } from '../helper/theme';
 import getStrings from '../locales/translation';
-import { AuthContext } from '../App';
+import { AuthContext, AuthDispatchContext } from '../App';
 import { getUsersMe, putUser } from '../helper/api';
 import { UpdateUser } from '../types';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faSignOut } from '@fortawesome/free-solid-svg-icons'
+import { removeStoredCredentials } from '../helper/authContext';
+
 
 interface TextOptionProps {
     title: string,
@@ -62,6 +66,7 @@ TextOptionView.defaultProps = {
 
 const Profile = () => {
     const auth = React.useContext(AuthContext);
+    const dispatch = React.useContext(AuthDispatchContext);
     const strings = getStrings(auth.user.language);
 
     const queryClient = useQueryClient()
@@ -89,10 +94,18 @@ const Profile = () => {
         },
     })
 
+    function handleSignOut() {
+        removeStoredCredentials();
+        dispatch('SIGN_OUT')
+    }
+
     return (
         <ScrollView>
             <View style={styles.headerView}>
                 <Text style={styles.header}>{strings.SETTINGS}</Text>
+                <Pressable onPress={() => handleSignOut()}>
+                    <FontAwesomeIcon icon={faSignOut}/>
+                </Pressable>
             </View>
             <View style={styles.bodyView}>
                 <TextOptionView
