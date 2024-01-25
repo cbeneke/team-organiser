@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     box: {
         flex: 1,
         width: '40%',
+        minWidth: 280,
         alignSelf: 'center',
         padding: 20,
     },

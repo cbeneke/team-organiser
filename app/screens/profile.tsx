@@ -96,7 +96,7 @@ const Profile = () => {
 
     function handleSignOut() {
         removeStoredCredentials();
-        dispatch('SIGN_OUT')
+        dispatch({ type: 'SIGN_OUT' })
     }
 
     return (
@@ -138,11 +138,13 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 40,
         padding: 10,
+        flexDirection: 'row',
     },
     header: {
         color: 'grey',
         textTransform: 'capitalize',
         fontSize: 20,
+        flexGrow: 1,
     },
     bodyView: {
         padding: 10,

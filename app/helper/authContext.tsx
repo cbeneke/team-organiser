@@ -68,7 +68,9 @@ export async function getStoredCredentials() {
   }
 
   const response = await getUsersMe(token)
-  if (response) {
+
+  // Errors return a {detail: "Error message"} object, users contain an ID
+  if (response.id) {
     return {user: response, token: token}
   } else {
     await removeStoredCredentials();
