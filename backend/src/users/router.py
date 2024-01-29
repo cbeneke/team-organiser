@@ -91,7 +91,12 @@ async def router_get_user_events(
     if not is_admin_or_self(actor, user, db):
         raise AccessDenied
 
-    responses = db.query(DBEventResponses).filter(DBEventResponses.user == user).all()
+    responses = (
+        db.query(DBEventResponses)
+        .filter(DBEventResponses.user == user)
+        .order_by(DBEvents.start_time)
+        .all()
+    )
 
     # TODO this can probably be done more efficiently
     events = [response.event for response in responses if response.event]
