@@ -5,6 +5,7 @@ Revises: ede3ed347761
 Create Date: 2023-10-28 15:32:18.174881
 
 """
+
 from typing import Sequence, Union
 from uuid import uuid4
 
