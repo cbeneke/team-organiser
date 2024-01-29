@@ -49,4 +49,4 @@ jobs:
         pip install black
 
     - name: Run Black
-      run: black --check backend/src backend/alembic/versions backend/tests
+      run: black --check --diff backend/src backend/alembic/versions backend/tests
