@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import LoginStack from './components/loginStack';
 import AppStack from './components/appStack';
-import { handleAuthAction, initialAuthContext, getStoredCredentials } from './helper/authContext';
+import { handleAuthAction, initialAuthContext, getStoredCredentials, removeStoredCredentials } from './helper/authContext';
 
 export const AuthContext = React.createContext(undefined);
 export const AuthDispatchContext = React.createContext(undefined);
@@ -13,7 +13,7 @@ function App() {
   React.useEffect(() => {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
-      let user, token = await getStoredCredentials();
+      let {user, token} = await getStoredCredentials();
       
       if (user && token) {
         dispatch({ type: 'SIGN_IN', token: token, user: user });

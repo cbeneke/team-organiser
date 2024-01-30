@@ -95,5 +95,6 @@ async def router_get_user_events(
 
     # TODO this can probably be done more efficiently
     events = [response.event for response in responses if response.event]
+    events.sort(key=lambda x: x.start_time)
 
     return events

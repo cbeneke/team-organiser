@@ -32,7 +32,10 @@ const EditEventModal = (props: EditEventModalProps) => {
     const [update, setUpdate] = useState<UpdateEvent>(emptyUpdate);
 
     async function fetchUsers() {
-        const users = await getUsers(auth.token);
+        // TODO Remove hardcoded filter as soon as team assignment is implemented
+        // const users = await getUsers(auth.token);        
+        let users = await getUsers(auth.token);
+        users = users.filter((user) => user.username != 'admin')
         return {users}
     }
     async function fetchEvent() {
