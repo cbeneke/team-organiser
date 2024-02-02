@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from uuid import UUID
 
 from src.users.models import DBUser, DBRoles
 from src.users.schemas import RoleName, ResponseUser

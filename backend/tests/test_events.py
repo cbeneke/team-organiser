@@ -38,15 +38,48 @@ def new_event(admin, user, client):
     except:
         pass
 
+@pytest.fixture(scope="function")
+def admin_only_event(admin, client):
+
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Temporary Event",
+            "description": "Temporary Description",
+            "start_time": "2023-01-01T13:00:00",
+            "end_time": "2023-01-01T14:00:00",
+            "display_color": "#000000",
+            "invitees": [],
+        },
+        headers={
+            "content-type": "application/json",
+            "Authorization": f"Bearer {admin['token']}",
+        },
+    )
+    print(response.json())
+    response_data = response.json()
+    id = response_data["id"]
+
+    yield {"id": id}
+
+    try:
+        client.delete(
+            f"/events/{id}", headers={"Authorization": f"Bearer {admin['token']}"}
+        )
+    except:
+        pass
+
 
 # List Event tests:
-#  - General list events
-#  - List Events including new_event
-#  - List Events excluding new_event
+#  - List own events
+#  - List Events for specific date range
+#  - List Events for specific date range with no events
+#  - List all events as user
+#  - List all events as admin
 #  - Validate dates are valid (start_date before end_date)
 
 
-def test_list_events(client, user):
+def test_list_own_events(client, user, new_event, admin_only_event):
     response = client.get(
         "/events/",
         headers={
@@ -58,9 +91,11 @@ def test_list_events(client, user):
     print(response_data)
 
     assert response.status_code == 200
+    assert len(response_data) == 1
+    assert response_data[0]["id"] == new_event["id"]
 
 
-def test_list_non_empty_events(client, user, new_event):
+def test_list_events_for_marked_date(client, user, new_event):
     response = client.get(
         "/events/",
         params={
@@ -76,10 +111,11 @@ def test_list_non_empty_events(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 200
-    assert new_event in response_data
+    assert len(response_data) == 1
+    assert response_data[0]["id"] == new_event["id"]
 
 
-def test_list_non_empty_events(client, user, new_event):
+def test_list_events_for_empty_date(client, user, new_event):
     response = client.get(
         "/events/",
         params={
@@ -95,8 +131,38 @@ def test_list_non_empty_events(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 200
-    assert response_data == []
+    assert len(response_data) == 0
 
+def test_list_all_events_as_user(client, user, new_event, admin_only_event):
+    response = client.get(
+        "/events/all",
+        headers={
+            "Authorization": f"Bearer {user['token']}",
+        },
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 403
+    assert response_data["detail"] == 'Access denied'
+
+
+def test_list_all_events_as_admin(client, admin, new_event, admin_only_event):
+    response = client.get(
+        "/events/all",
+        headers={
+            "Authorization": f"Bearer {admin['token']}",
+        },
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 2
+    assert response_data[0]["id"] == new_event["id"]
+    assert response_data[1]["id"] == admin_only_event["id"]
 
 def test_list_invalid_dates(client, user, new_event):
     response = client.get(
@@ -412,7 +478,7 @@ def test_delete_event_responses(client, admin, new_event):
     assert response.status_code == 200
 
     response = client.get(
-        f"/users/{admin['id']}/events",
+        f"/events/",
         headers={"Authorization": f"Bearer {admin['token']}"},
     )
     response_data = response.json()

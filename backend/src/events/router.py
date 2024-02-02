@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Form, status
-from typing import Annotated, Optional, Union
+from typing import Annotated, Optional
 from sqlalchemy.orm import Session
 from datetime import date
 
@@ -13,17 +13,19 @@ from src.events.schemas import (
     UpdateEvent,
     ResponseType,
     Response,
+    RecurrenceType,
 )
 from src.events.dependencies import get_event
 from src.events.service import (
     add_event,
+    add_series,
     update_event,
-    synchronise_invitees,
+    update_series,
     respond_to_event,
 )
 from src.events.utils import parse_timerange
 
-from src.users.dependencies import get_current_active_user
+from src.users.dependencies import (get_current_active_user, get_current_active_admin_user)
 from src.users.exceptions import AccessDenied
 from src.users.schemas import ResponseUser
 from src.users.utils import is_admin_or_self
@@ -42,7 +44,31 @@ async def router_get_events(
 
     events = (
         db.query(DBEvents)
-        .filter(DBEvents.start_time <= end_time, DBEvents.end_time >= start_time)
+        .filter(
+            DBEvents.start_time <= end_time,
+            DBEvents.end_time >= start_time,
+            DBEvents.responses.any(DBEventResponses.user_id == user.id),
+        )
+        .order_by(DBEvents.start_time)
+        .all()
+    )
+    return events
+
+@router.get("/all", response_model=list[ResponseEvent])
+async def router_get_events(
+    start_date: Optional[Annotated[date, Form()]] = None,
+    end_date: Optional[Annotated[date, Form()]] = None,
+    user: ResponseUser = Depends(get_current_active_admin_user),
+    db: Session = Depends(get_db),
+):
+    start_time, end_time = parse_timerange(start_date, end_date)
+
+    events = (
+        db.query(DBEvents)
+        .filter(
+            DBEvents.start_time <= end_time,
+            DBEvents.end_time >= start_time,
+        )
         .order_by(DBEvents.start_time)
         .all()
     )
@@ -51,11 +77,13 @@ async def router_get_events(
 
 @router.post("/", response_model=ResponseEvent, status_code=status.HTTP_201_CREATED)
 async def router_add_event(
-    event: NewEvent,
+    new: NewEvent,
     user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    event = add_event(event, user, db)
+    event = add_event(new, user, db)
+    if new.reccurence != RecurrenceType.once:
+        add_series(event, db)
 
     return event
 
@@ -70,6 +98,7 @@ async def router_get_event(
 
 @router.delete("/{event_id}")
 async def router_delete_event(
+    update_all: bool = False,
     user: ResponseUser = Depends(get_current_active_user),
     event: ResponseEvent = Depends(get_event),
     db: Session = Depends(get_db),
@@ -78,13 +107,19 @@ async def router_delete_event(
         raise AccessDenied
 
     db.delete(event)
+    if update_all:
+        db.query(DBEvents).filter(
+            DBEvents.series_id == event.series_id,
+            DBEvents.start_time >= event.start_time,    
+        ).delete()
+
     db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
     db.commit()
 
     return {}
 
 
-@router.put("/{event_id}", response_model=ResponseEvent)
+@router.put("/{event_id}", response_model=ResponseEvent|list[ResponseEvent])
 async def router_update_event(
     update: UpdateEvent,
     db: Session = Depends(get_db),
@@ -98,19 +133,12 @@ async def router_update_event(
     if all_fields_are_none(update):
         return event
 
-    event = update_event(
-        db,
-        event,
-        update.title,
-        update.description,
-        update.start_time,
-        update.end_time,
-        update.display_color,
-    )
-    if update.invitees:
-        synchronise_invitees(db, event, update.invitees)
-
-    return event
+    if event.series_id is not None and update.update_all:
+        events = update_series(db, event, update)
+        return events
+    else:
+        event = update_event(db, event, update)
+        return event
 
 
 @router.put("/{event_id}/respond", response_model=Response)

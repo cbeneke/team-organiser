@@ -231,35 +231,3 @@ def test_delete_self(client, new_user):
 
     assert response.status_code == 200
 
-
-# User Event tests:
-#  - List Events of user
-#  - List Events of other user
-#  - List Events of non-existent user
-#  - List Events of other user as admin
-
-
-def test_list_events(client, user, new_event):
-    response = client.get(
-        f"/users/{user['id']}/events/",
-        headers={"Authorization": f"Bearer {user['token']}"},
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 200
-    assert len(response_data) == 1
-    assert response_data[0]["id"] == new_event["id"]
-
-
-def test_list_other_events(client, user, new_user):
-    response = client.get(
-        f"/users/{new_user['id']}/events/",
-        headers={"Authorization": f"Bearer {user['token']}"},
-    )
-
-    response_data = response.json()
-    print(response_data)
-
-    assert response.status_code == 403

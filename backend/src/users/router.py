@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from typing import Annotated
 from sqlalchemy.orm import Session
 
 from src.database import get_db
@@ -15,8 +14,7 @@ from src.users.service import update_user
 from src.users.utils import is_admin_or_self, is_admin
 from src.users.exceptions import AccessDenied
 
-from src.events.schemas import ResponseEvent
-from src.events.models import DBEventResponses, DBEvents
+from src.events.models import DBEventResponses
 
 
 router = APIRouter()
@@ -80,21 +78,3 @@ async def router_update_user(
 
     user = update_user(user, update.display_name, update.password, update.is_admin, db)
     return user
-
-
-@router.get("/{user_id}/events", response_model=list[ResponseEvent])
-async def router_get_user_events(
-    user: ResponseUser = Depends(get_user),
-    actor: ResponseUser = Depends(get_current_active_user),
-    db: Session = Depends(get_db),
-):
-    if not is_admin_or_self(actor, user, db):
-        raise AccessDenied
-
-    responses = db.query(DBEventResponses).filter(DBEventResponses.user == user).all()
-
-    # TODO this can probably be done more efficiently
-    events = [response.event for response in responses if response.event]
-    events.sort(key=lambda x: x.start_time)
-
-    return events

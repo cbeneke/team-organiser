@@ -1,12 +1,12 @@
-from typing import Optional
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from src.events.models import DBEvents, DBEventResponses
 from src.events.schemas import (
     ResponseEvent,
     NewEvent,
     ResponseType,
+    UpdateEvent,
 )
 from src.events.exceptions import (
     EventDatesInvalid,
@@ -31,12 +31,13 @@ def add_event(
         raise EventTitleInvalid
 
     event = DBEvents(
-        title=new.title,
-        description=new.description,
-        start_time=new.start_time,
-        end_time=new.end_time,
-        display_color=new.display_color,
-        owner=owner,
+        series_id     = None,
+        title         = new.title,
+        description   = new.description,
+        start_time    = new.start_time,
+        end_time      = new.end_time,
+        display_color = new.display_color,
+        owner         = owner,
     )
 
     db.add(event)
@@ -51,28 +52,74 @@ def add_event(
 
     return event
 
+# TODO: This needs to handle non-weekly recurrences at some point
+def add_series(event: ResponseEvent, db: Session):
+    event = db.query(DBEvents).get(event.id)
+    event.series_id = event.id
+
+    # TODO: This needs a refresh endpoint
+    for i in range(1, 52):
+        new_event = DBEvents(
+            series_id     = event.id,
+            title         = event.title,
+            description   = event.description,
+            start_time    = event.start_time + timedelta(weeks=i),
+            end_time      = event.end_time + timedelta(weeks=i),
+            display_color = event.display_color,
+            owner         = event.owner,
+        )
+        db.add(new_event)
+
+    db.commit()
+    db.refresh(event)
 
 def update_event(
     db: Session,
     event: ResponseEvent,
-    title: Optional[str],
-    description: Optional[str],
-    start_time: Optional[datetime],
-    end_time: Optional[datetime],
-    display_color: Optional[str],
+    update: UpdateEvent,
 ) -> ResponseEvent:
     event = db.query(DBEvents).get(event.id)
 
-    event.title = title if title else event.title
-    event.description = description if description else event.description
-    event.start_time = start_time if start_time else event.start_time
-    event.end_time = end_time if end_time else event.end_time
-    event.display_color = display_color if display_color else event.display_color
+    if update.title:
+        event.title = update.title
+
+    if update.description:
+        event.description = update.description
+
+    if update.start_time:
+        event.start_time = update.start_time
+
+    if update.end_time:
+        event.end_time = update.end_time
+        
+    if update.display_color:
+        event.display_color = update.display_color
+    
+    if update.invitees:
+        synchronise_invitees(db, event, update.invitees)
 
     db.commit()
     db.refresh(event)
 
     return event
+
+def update_series(
+    db: Session,
+    base: ResponseEvent,
+    update: UpdateEvent,
+) -> ResponseEvent:
+
+    events = (
+        db.query(DBEvents)
+        .filter(DBEvents.series_id == base.series_id, DBEvents.start_time >= base.start_time)
+        .all()
+    )
+
+    for event in events:
+        # TODO: Improve DB performance by committing all changes at once
+        event = update_event(db, event, update)
+
+    return events
 
 
 def get_events(db: Session, start_time: datetime, end_time: datetime) -> ResponseEvent:
