@@ -51,8 +51,8 @@ export function getUsers(token: string) {
     });
 }
 
-export function getEvents(token: string, userID: string) {
-    return fetch('https://pb-api.rootlink.de/users/' + userID + '/events', {
+export function getEvents(token: string) {
+    return fetch('https://pb-api.rootlink.de/events/', {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,
