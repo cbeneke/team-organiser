@@ -1,7 +1,7 @@
 import { Event, NewEvent, UpdateUser, UpdateEvent } from '../types';
 
 export function postLogin(username: string, password: string) {
-    return fetch('https://pb-api.rootlink.de/auth/login', {
+    return fetch('https://' + process.env.API_DOMAIN + '/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -20,7 +20,7 @@ export function postRegister(username: string, password: string) {
 }
 
 export function getUsersMe(token: string) {
-    return fetch('https://pb-api.rootlink.de/users/me', {
+    return fetch('https://' + process.env.API_DOMAIN + '/users/me', {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -38,7 +38,7 @@ export function getUser(id: string) {
 }
 
 export function getUsers(token: string) {
-    return fetch('https://pb-api.rootlink.de/users/', {
+    return fetch('https://' + process.env.API_DOMAIN + '/users/', {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -52,7 +52,7 @@ export function getUsers(token: string) {
 }
 
 export function getEvents(token: string) {
-    return fetch('https://pb-api.rootlink.de/events/', {
+    return fetch('https://' + process.env.API_DOMAIN + '/events/', {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -66,7 +66,7 @@ export function getEvents(token: string) {
 }
 
 export function getEvent(token: string, id: string) {
-    return fetch('https://pb-api.rootlink.de/events/' + id, {
+    return fetch('https://' + process.env.API_DOMAIN + '/events/' + id, {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -80,7 +80,7 @@ export function getEvent(token: string, id: string) {
 }
 
 export function putEventResponse(token: string, eventID: string, status: string) {
-    return fetch('https://pb-api.rootlink.de/events/' + eventID + '/respond?' + new URLSearchParams({
+    return fetch('https://' + process.env.API_DOMAIN + '/events/' + eventID + '/respond?' + new URLSearchParams({
             status: status
         }), {
         method: 'PUT',
@@ -96,7 +96,7 @@ export function putEventResponse(token: string, eventID: string, status: string)
 }
 
 export function putUser(token: string, userID: string, update: UpdateUser) {
-    return fetch('https://pb-api.rootlink.de/users/' + userID, {
+    return fetch('https://' + process.env.API_DOMAIN + '/users/' + userID, {
         method: 'PUT',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -112,7 +112,7 @@ export function putUser(token: string, userID: string, update: UpdateUser) {
 }
 
 export function postEvent(token: string, event: NewEvent) {
-    return fetch('https://pb-api.rootlink.de/events/', {
+    return fetch('https://' + process.env.API_DOMAIN + '/events/', {
         method: 'POST',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -128,7 +128,7 @@ export function postEvent(token: string, event: NewEvent) {
 }
 
 export function putEvent(token: string, eventID: string, event: UpdateEvent) {
-    return fetch('https://pb-api.rootlink.de/events/' + eventID, {
+    return fetch('https://' + process.env.API_DOMAIN + '/events/' + eventID, {
         method: 'PUT',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -144,7 +144,7 @@ export function putEvent(token: string, eventID: string, event: UpdateEvent) {
 }
 
 export function deleteEvent(token: string, event: Event) {
-    return fetch('https://pb-api.rootlink.de/events/' + event.id, {
+    return fetch('https://' + process.env.API_DOMAIN + '/events/' + event.id, {
         method: 'DELETE',
         headers: {
             'Authorization': 'Bearer ' + token,
