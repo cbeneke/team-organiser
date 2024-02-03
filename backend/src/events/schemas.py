@@ -36,7 +36,7 @@ class Response(BaseModel):
 
 class NewEvent(BaseEvent):
     invitees: list[ResponseUser] = []
-    reccurence: RecurrenceType = RecurrenceType.once
+    recurrence: RecurrenceType = RecurrenceType.once
 
 
 class ResponseEvent(BaseEvent):

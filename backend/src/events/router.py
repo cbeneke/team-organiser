@@ -82,8 +82,8 @@ async def router_add_event(
     db: Session = Depends(get_db),
 ):
     event = add_event(new, user, db)
-    if new.reccurence != RecurrenceType.once:
-        add_series(event, db)
+    if new.recurrence != RecurrenceType.once:
+        add_series(new, event, db)
 
     return event
 
