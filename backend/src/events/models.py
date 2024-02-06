@@ -10,6 +10,7 @@ class DBEvents(Base):
     __tablename__ = "events"
 
     id = sql.Column(GUID(), primary_key=True, index=True, default=lambda: str(uuid4()))
+    series_id = sql.Column(GUID(), index=True, nullable=True)
     title = sql.Column(sql.String)
     description = sql.Column(sql.String)
     start_time = sql.Column(sql.DateTime, index=True)

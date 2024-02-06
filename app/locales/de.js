@@ -31,5 +31,12 @@ export default {
         USERNAME_PASSWORD_WRONG: 'Nutzername oder Passwort falsch!',
         USERNAME_PASSWORD_EMPTY: 'Nutzername und Passwort dürfen nicht leer sein!',
         EVENT_SAVE: 'Termin konnte nicht gespeichert werden!',
-    }
+    },
+    RECURRENCE: 'Wiederholen',
+    RECURRENCE_ONCE: 'Nie',
+    RECURRENCE_WEEKLY: 'Wöchentlich',
+    ASK_ALL_ONE_DELETE: 'Alle oder nur diesen Termin löschen?',
+    ASK_ALL_ONE_SAVE: 'Alle oder nur diesen Termin speichern?',
+    ALL_ONE_ONE: 'Nur dieser',
+    ALL_ONE_ALL: 'Alle',
 };

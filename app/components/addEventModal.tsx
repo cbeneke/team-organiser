@@ -9,7 +9,7 @@ import { NewEvent } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
 import { postEvent, getUsers } from '../helper/api';
-import { TextOption, TimeOption } from './editEventOptions';
+import { MultipleChoiceOption, TextOption, TimeOption } from './editEventOptions';
 
 interface AddEventModalProps {
     setVisible: (visible: boolean) => void;
@@ -46,6 +46,7 @@ const AddEventModal = (props: AddEventModalProps) => {
         end_time: initDate(2), // Initialise EndDate with upcoming hour + 2
         invitees: query.data?.users ? query.data.users : [],
         display_color: "",
+        recurrence: "once",
     }
 
     const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
@@ -104,6 +105,11 @@ const AddEventModal = (props: AddEventModalProps) => {
                     title={strings.END_TIME}
                     value={newEvent.end_time}
                     callback={(end_time) => setNewEvent({...newEvent, end_time: end_time})} />
+                <MultipleChoiceOption
+                    title={strings.RECURRENCE}
+                    choices={[{id: 'once', title: strings.RECURRENCE_ONCE}, {id: 'weekly', title: strings.RECURRENCE_WEEKLY}]}
+                    value={newEvent.recurrence}
+                    callback={(recurrence) => setNewEvent({...newEvent, recurrence: recurrence})} />
             </View>
             <Text style={styles.error}>{error}</Text>
             <View style={styles.footerView}>

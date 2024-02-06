@@ -10,6 +10,7 @@ import { Event } from '../types';
 import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
 import { getEvent, putEventResponse, deleteEvent } from '../helper/api';
+import AskAllOrOnceModal from './askAllOrOnceModal'
 
 
 interface EventModalProps {
@@ -44,15 +45,13 @@ const EventModal = (props: EventModalProps) => {
         await putEventResponse(auth.token, event.id, currentResponse)
     }
 
-    async function removeEvent(event: Event) {
-        if (window.confirm(strings.CONFIRM_DELETE_EVENT)) {
-            deleteEvent(auth.token, event).then((response) => {
-                queryClient.invalidateQueries({ queryKey: ['events'] })
-                closeModal();
-            }).catch((error) => {
-                setError(strings.ERRORS.EVENT_DELETE)
-            });
-        }
+    async function removeEvent(event: Event, update_all: boolean) {
+        deleteEvent(auth.token, event, update_all).then((response) => {
+            queryClient.invalidateQueries({ queryKey: ['events'] })
+            closeModal();
+        }).catch((error) => {
+            setError(strings.ERRORS.EVENT_DELETE)
+        });
     }
 
     const query = useQuery({ queryKey: ['events', eventUUID], queryFn: fetchEvent, enabled: !!eventUUID })
@@ -119,8 +118,20 @@ const EventModal = (props: EventModalProps) => {
         );
     };
 
+    const [askAllOrOnceModalVisible, setAskAllOrOnceModalVisible] = useState(false);
+
     if (query.isLoading || query.isError || !query.data) {
-        return null;
+        return <AskAllOrOnceModal
+                title={strings.ASK_ALL_ONE_DELETE}
+                isModalVisible={askAllOrOnceModalVisible}
+                setModalVisible={setAskAllOrOnceModalVisible}
+                saveOnceCallback={() => {
+                    setAskAllOrOnceModalVisible(false);
+                }}
+                saveAllCallback={() => {
+                    setAskAllOrOnceModalVisible(false);
+                }}
+            />
     }
 
     return (
@@ -131,7 +142,7 @@ const EventModal = (props: EventModalProps) => {
                     <Pressable style={styles.headerButton} onPress={openEditModal}>
                         <FontAwesomeIcon icon={faPencil} />
                     </Pressable>
-                    <Pressable style={styles.headerButton} onPress={async () => {await removeEvent(query.data)}}>
+                    <Pressable style={styles.headerButton} onPress={() => {setAskAllOrOnceModalVisible(true)}}>
                         <FontAwesomeIcon icon={faTrashCan} />
                     </Pressable>
                     <Pressable style={styles.headerButton} onPress={closeModal}>
@@ -172,6 +183,19 @@ const EventModal = (props: EventModalProps) => {
                     <Text style={currentResponse == 'declined' ? styles.currentResponseButtonText : styles.respondingButtonText}>{strings.RESPONSES.DECLINE}</Text>
                 </Pressable>
             </View>
+            <AskAllOrOnceModal
+                title={strings.ASK_ALL_ONE_DELETE}
+                isModalVisible={askAllOrOnceModalVisible}
+                setModalVisible={setAskAllOrOnceModalVisible}
+                saveOnceCallback={async () => {
+                    setAskAllOrOnceModalVisible(false);
+                    await removeEvent(query.data, false)
+                }}
+                saveAllCallback={async () => {
+                    setAskAllOrOnceModalVisible(false);
+                    await removeEvent(query.data, true)
+                }}
+            />
         </View>
     );
 }

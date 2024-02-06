@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from src.events.exceptions import EventDatesInvalid
 
@@ -8,9 +8,9 @@ def parse_timerange(
     start_date: Optional[date], end_date: Optional[date]
 ) -> tuple[datetime, datetime]:
     if not start_date:
-        start_date = date.today()
+        start_date = date.min
     if not end_date:
-        end_date = start_date + timedelta(days=7)
+        end_date = date.max
 
     if end_date < start_date:
         raise EventDatesInvalid

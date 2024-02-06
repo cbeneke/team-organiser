@@ -113,7 +113,7 @@ const Calendar = (props: Props) => {
   const auth = React.useContext(AuthContext);
 
   async function fetchEvents() {
-    const events = await getEvents(auth.token, auth.user.id);
+    const events = await getEvents(auth.token);
     const agendaItems = getAgendaItems(events);
     const markedDays = getEventMarkers(agendaItems);
   

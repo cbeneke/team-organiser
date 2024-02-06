@@ -7,6 +7,11 @@ from typing import Union
 from src.users.schemas import ResponseUser
 
 
+class RecurrenceType(str, Enum):
+    once = "once"
+    weekly = "weekly"
+
+
 class BaseEvent(BaseModel):
     title: str
     description: str
@@ -31,10 +36,12 @@ class Response(BaseModel):
 
 class NewEvent(BaseEvent):
     invitees: list[ResponseUser] = []
+    recurrence: RecurrenceType = RecurrenceType.once
 
 
 class ResponseEvent(BaseEvent):
     id: UUID = Field(default_factory=uuid4)
+    series_id: Union[UUID, None] = None
     owner: ResponseUser
     responses: list[Response] = []
 
@@ -53,3 +60,4 @@ class UpdateEvent(BaseModel):
     end_time: Union[datetime, None] = None
     display_color: Union[str, None] = None
     invitees: list[ResponseUser] = None
+    update_all: bool = False

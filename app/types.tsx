@@ -28,6 +28,7 @@ export interface NewEvent {
     description: string;
     invitees: string[];
     display_color: string;
+    recurrence: string;
 }
 
 export interface Event {
@@ -46,6 +47,7 @@ export interface UpdateEvent {
     description?: string | undefined;
     invitees?: string[] | undefined;
     display_color?: string | undefined;
+    update_all: boolean;
 }
 
 export interface AgendaEvent {
