@@ -8,7 +8,6 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - name: Generate short SHA
         id: vars
