@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, Pressable, View } from 'react-native';
+import { Text, Pressable, View, Modal } from 'react-native';
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
@@ -10,6 +10,7 @@ import getStrings from '../locales/translation';
 import { AuthContext } from '../App';
 import { putEvent, getUsers, getEvent } from '../helper/api';
 import { TextOption, TimeOption } from './editEventOptions';
+import AskAllOrOnceModal from './askAllOrOnceModal'
 
 interface EditEventModalProps {
     eventUUID?: string;
@@ -22,14 +23,16 @@ const EditEventModal = (props: EditEventModalProps) => {
     const queryClient = useQueryClient()
 
     const emptyUpdate: UpdateEvent = {
-        title: "",
-        description: "",
-        start_time: "1970-01-01T00:00:00.000Z",
-        end_time: "1970-01-01T00:00:00.000Z",
+        title: undefined,
+        description: undefined,
+        start_time: undefined,
+        end_time: undefined,
         invitees: [],
-        display_color: "",
+        display_color: undefined,
+        update_all: false,
     }
     const [update, setUpdate] = useState<UpdateEvent>(emptyUpdate);
+    const [isRecurring, setIsRecurring] = useState(false);
 
     async function fetchUsers() {
         // TODO Remove hardcoded filter as soon as team assignment is implemented
@@ -56,10 +59,33 @@ const EditEventModal = (props: EditEventModalProps) => {
         setVisible(false);
     };
 
+    async function handleSaveEvent(token: string, event: Event, update: UpdateEvent) {
+        // TODO: For now we don't allow editing the dates of recurring events
+        if (
+            isRecurring
+            && update.start_time == event.start_time
+            && update.end_time == event.end_time
+        ) {
+            setAskAllOrOnceModalVisible(true);
+        } else {
+            await saveEvent(token, event, update)
+        }
+    }
+
     async function saveEvent(token: string, event: Event, update: UpdateEvent) {
-        putEvent(token, event.id, update).then((response) => {
+        const cleanedUpdate = {
+            title: update.title != event.title ? update.title : undefined,
+            description: update.description != event.description ? update.description : undefined,
+            start_time: update.start_time != event.start_time ? update.start_time : undefined,
+            end_time: update.end_time != event.end_time ? update.end_time : undefined,
+            invitees: update.invitees,
+            display_color: undefined,
+            update_all: update.update_all,
+        }
+
+        putEvent(token, event.id, cleanedUpdate).then((response) => {
             // An event ID is only generated for successful event creations
-            if (response && response.id) {
+            if (response && (response.id || response[0].id) ) {
                 queryClient.invalidateQueries({ queryKey: ['events'] })
                 closeModal();
             } else {
@@ -77,7 +103,9 @@ const EditEventModal = (props: EditEventModalProps) => {
                 description: update.description != emptyUpdate.description ? update.description : event_query.data.description,
                 start_time: update.start_time != emptyUpdate.start_time ? update.start_time : event_query.data.start_time,
                 end_time: update.end_time != emptyUpdate.end_time ? update.end_time : event_query.data.end_time,
+                update_all: update.update_all,
             })
+            setIsRecurring(event_query.data.series_id != null)
         }
     }, [event_query.data])
 
@@ -91,8 +119,11 @@ const EditEventModal = (props: EditEventModalProps) => {
     }, [users_query.data])
 
     useEffect(() => {
-        setUpdate(emptyUpdate);
+        setUpdate(emptyUpdate)
+        setIsRecurring(false)
     }, [eventUUID])
+
+    const [askAllOrOnceModalVisible, setAskAllOrOnceModalVisible] = useState(false);
 
     return (
         <View style={styles.modalView}>
@@ -122,10 +153,24 @@ const EditEventModal = (props: EditEventModalProps) => {
             </View>
             <Text style={styles.error}>{error}</Text>
             <View style={styles.footerView}>
-                <Pressable style={styles.button} onPress={async () => await saveEvent(auth.token, event_query.data, update)}>
+                <Pressable style={styles.button} onPress={async () => await handleSaveEvent(auth.token, event_query.data, update)}>
                     <Text style={styles.buttonText}>{strings.SAVE}</Text>
                 </Pressable>
             </View>
+            <AskAllOrOnceModal
+                title={strings.ASK_ALL_ONE_SAVE}
+                isModalVisible={askAllOrOnceModalVisible}
+                setModalVisible={setAskAllOrOnceModalVisible}
+                saveOnceCallback={() => {
+                    setAskAllOrOnceModalVisible(false);
+                    saveEvent(auth.token, event_query.data, update)
+                }}
+                saveAllCallback={() => {
+                    setAskAllOrOnceModalVisible(false);
+                    update.update_all = true;
+                    saveEvent(auth.token, event_query.data, update)
+                }}
+            />
         </View>
     );
 }

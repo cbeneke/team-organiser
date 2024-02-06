@@ -107,13 +107,17 @@ async def router_delete_event(
         raise AccessDenied
 
     db.delete(event)
+    db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
+
     if update_all:
-        db.query(DBEvents).filter(
+        events = db.query(DBEvents).filter(
             DBEvents.series_id == event.series_id,
             DBEvents.start_time >= event.start_time,    
-        ).delete()
-
-    db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
+        ).all()
+        for e in events:
+            db.delete(e)
+            db.query(DBEventResponses).filter(DBEventResponses.event == e).delete()
+    
     db.commit()
 
     return {}

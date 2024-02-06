@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, TextInput, SafeAreaView, View, Pressable } from 'react-native';
+import { themeColor } from '../helper/theme';
 
 
 interface OptionProps<T> {
     title: string,
     value: T,
     callback: (option: T) => void | undefined,
+}
+
+interface MultipleChoiceOptionProps {
+    title: string,
+    choices: {id: string, title: string}[],
+    value: string,
+    callback: (option: string) => void | undefined,
 }
 
 export function TextOption (props: OptionProps<string>) {
@@ -71,6 +79,31 @@ export function TimeOption (props: OptionProps<string>) {
     )
 }
 
+export function MultipleChoiceOption (props: MultipleChoiceOptionProps) {
+    const {title, choices, value, callback} = props;
+
+    const [option, setOption] = useState(value);
+
+    return (
+        <SafeAreaView style={styles.optionView}>
+            <Text style={styles.inputTitle}>{title}</Text>
+            <View style={styles.choicesView}>
+                {choices.map((choice) => {
+                    return (
+                        <Pressable style={option == choice.id ? styles.activeInput : styles.input} onPress={() => {
+                            setOption(choice.id);
+                            callback(choice.id);
+                        }}>
+                            <Text style={option == choice.id ? styles.activeButtonText : styles.buttonText}>{choice.title}</Text>
+                        </Pressable>
+                    )
+                })}
+            </View>
+        </SafeAreaView>
+    )
+
+}
+
 // TODO: For now all users will be invited to all events
 // function UserSelection (props: OptionProps<string[]>) {
 //     const {title, value, callback} = props;
@@ -119,7 +152,6 @@ export function TimeOption (props: OptionProps<string>) {
 
 
 const styles = StyleSheet.create({
-
     optionView: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -132,10 +164,27 @@ const styles = StyleSheet.create({
         color: 'grey',
         textTransform: 'capitalize',
     },
+    choicesView: {
+        flexGrow: 1,
+        flexDirection: 'row',
+    },
     input: {
         borderWidth: 1,
         borderRadius: 10,
         padding: 10,
         flexGrow: 1,
+    },
+    activeInput: {
+        borderRadius: 10,
+        padding: 10,
+        flexGrow: 1,
+        backgroundColor: themeColor,
+    },
+    buttonText: {
+        textAlign: 'center',
+    },
+    activeButtonText: {
+        textAlign: 'center',
+        color: 'white',
     },
 });

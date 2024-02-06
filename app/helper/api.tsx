@@ -143,12 +143,15 @@ export function putEvent(token: string, eventID: string, event: UpdateEvent) {
     });
 }
 
-export function deleteEvent(token: string, event: Event) {
-    return fetch('https://' + process.env.API_DOMAIN + '/events/' + event.id, {
+export function deleteEvent(token: string, event: Event, update_all: boolean) {
+    return fetch('https://' + process.env.API_DOMAIN + '/events/' + event.id + '?' + new URLSearchParams({
+        update_all: String(update_all),
+    }), {
         method: 'DELETE',
         headers: {
             'Authorization': 'Bearer ' + token,
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
         },
     })
     .then((response) => response.json())

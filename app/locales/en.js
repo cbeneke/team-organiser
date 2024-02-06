@@ -31,5 +31,12 @@ export default {
         USERNAME_PASSWORD_WRONG: 'Username or password wrong!',
         USERNAME_PASSWORD_EMPTY: 'Username and password must not be empty!',
         EVENT_SAVE: 'Event could not be saved!',
-    }
+    },
+    RECURRENCE: 'Recurring',
+    RECURRENCE_ONCE: 'Never',
+    RECURRENCE_WEEKLY: 'Weekly',
+    ASK_ALL_ONE_DELETE: 'Delete all or this only?',
+    ASK_ALL_ONE_SAVE: 'Save for all or this only?',
+    ALL_ONE_ONE: 'Only this',
+    ALL_ONE_ALL: 'All',
 };
