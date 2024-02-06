@@ -31,13 +31,13 @@ def add_event(
         raise EventTitleInvalid
 
     event = DBEvents(
-        series_id     = None,
-        title         = new.title,
-        description   = new.description,
-        start_time    = new.start_time,
-        end_time      = new.end_time,
-        display_color = new.display_color,
-        owner         = owner,
+        series_id=None,
+        title=new.title,
+        description=new.description,
+        start_time=new.start_time,
+        end_time=new.end_time,
+        display_color=new.display_color,
+        owner=owner,
     )
 
     db.add(event)
@@ -51,6 +51,7 @@ def add_event(
     respond_to_event(db, event, owner, ResponseType.accepted)
 
     return event
+
 
 # TODO: This needs to handle non-weekly recurrences at some point
 def add_series(new: NewEvent, base: ResponseEvent, db: Session):
@@ -68,6 +69,7 @@ def add_series(new: NewEvent, base: ResponseEvent, db: Session):
         event.series_id = base.id
         db.commit()
         db.refresh(event)
+
 
 def update_event(
     db: Session,
@@ -87,10 +89,10 @@ def update_event(
 
     if update.end_time:
         event.end_time = update.end_time
-        
+
     if update.display_color:
         event.display_color = update.display_color
-    
+
     if update.invitees:
         synchronise_invitees(db, event, update.invitees)
 
@@ -99,15 +101,17 @@ def update_event(
 
     return event
 
+
 def update_series(
     db: Session,
     base: ResponseEvent,
     update: UpdateEvent,
 ) -> ResponseEvent:
-
     events = (
         db.query(DBEvents)
-        .filter(DBEvents.series_id == base.series_id, DBEvents.start_time >= base.start_time)
+        .filter(
+            DBEvents.series_id == base.series_id, DBEvents.start_time >= base.start_time
+        )
         .all()
     )
 

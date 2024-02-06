@@ -61,4 +61,3 @@ class UpdateEvent(BaseModel):
     display_color: Union[str, None] = None
     invitees: list[ResponseUser] = None
     update_all: bool = False
-

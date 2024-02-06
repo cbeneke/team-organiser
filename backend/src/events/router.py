@@ -25,7 +25,10 @@ from src.events.service import (
 )
 from src.events.utils import parse_timerange
 
-from src.users.dependencies import (get_current_active_user, get_current_active_admin_user)
+from src.users.dependencies import (
+    get_current_active_user,
+    get_current_active_admin_user,
+)
 from src.users.exceptions import AccessDenied
 from src.users.schemas import ResponseUser
 from src.users.utils import is_admin_or_self
@@ -53,6 +56,7 @@ async def router_get_events(
         .all()
     )
     return events
+
 
 @router.get("/all", response_model=list[ResponseEvent])
 async def router_get_events(
@@ -110,20 +114,24 @@ async def router_delete_event(
     db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
 
     if update_all:
-        events = db.query(DBEvents).filter(
-            DBEvents.series_id == event.series_id,
-            DBEvents.start_time >= event.start_time,    
-        ).all()
+        events = (
+            db.query(DBEvents)
+            .filter(
+                DBEvents.series_id == event.series_id,
+                DBEvents.start_time >= event.start_time,
+            )
+            .all()
+        )
         for e in events:
             db.delete(e)
             db.query(DBEventResponses).filter(DBEventResponses.event == e).delete()
-    
+
     db.commit()
 
     return {}
 
 
-@router.put("/{event_id}", response_model=ResponseEvent|list[ResponseEvent])
+@router.put("/{event_id}", response_model=ResponseEvent | list[ResponseEvent])
 async def router_update_event(
     update: UpdateEvent,
     db: Session = Depends(get_db),

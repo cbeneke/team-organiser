@@ -70,14 +70,16 @@ def new_recurring_event(admin, user, client):
 
     try:
         client.delete(
-            f"/events/{id}", headers={"Authorization": f"Bearer {admin['token']}"}
+            f"/events/{id}",
+            params={"update_all": "true"},
+            headers={"Authorization": f"Bearer {admin['token']}"},
         )
     except:
         pass
 
+
 @pytest.fixture(scope="function")
 def admin_only_event(admin, client):
-
     response = client.post(
         "/events/",
         json={
@@ -170,6 +172,7 @@ def test_list_events_for_empty_date(client, user, new_event):
     assert response.status_code == 200
     assert len(response_data) == 0
 
+
 def test_list_all_events_as_user(client, user, new_event, admin_only_event):
     response = client.get(
         "/events/all",
@@ -182,7 +185,7 @@ def test_list_all_events_as_user(client, user, new_event, admin_only_event):
     print(response_data)
 
     assert response.status_code == 403
-    assert response_data["detail"] == 'Access denied'
+    assert response_data["detail"] == "Access denied"
 
 
 def test_list_all_events_as_admin(client, admin, new_event, admin_only_event):
@@ -200,6 +203,7 @@ def test_list_all_events_as_admin(client, admin, new_event, admin_only_event):
     assert len(response_data) == 2
     assert response_data[0]["id"] == new_event["id"]
     assert response_data[1]["id"] == admin_only_event["id"]
+
 
 def test_list_invalid_dates(client, user, new_event):
     response = client.get(
@@ -253,7 +257,7 @@ def test_add_event(client, user):
     assert len(response_data["responses"]) == 1
 
 
-def test_add_event_owner_deduplicatoin(client, user):
+def test_add_event_owner_deduplication(client, user):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
     )
@@ -589,11 +593,13 @@ def test_user_accept_non_invited(client, admin, user, new_event):
     assert response.status_code == 404
     assert response_data["detail"] == "User not invited to event"
 
+
 # Test Event Series
 #  - Create series
 #  - Get series
 #  - Update series
 #  - Delete series
+
 
 def test_add_recurring_event(client, admin):
     response = client.post(
@@ -619,6 +625,18 @@ def test_add_recurring_event(client, admin):
     assert "series_id" in response_data
     assert response_data["id"] == response_data["series_id"]
 
+    response = client.delete(
+        f"/events/{response_data['id']}",
+        params={"update_all": "true"},
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+
 def test_get_recurring_event(client, admin, new_recurring_event):
     response = client.get(
         "/events/",
@@ -632,6 +650,7 @@ def test_get_recurring_event(client, admin, new_recurring_event):
     assert len(response_data) == 52
     for event in response_data:
         assert event["series_id"] == new_recurring_event["id"]
+
 
 def test_update_recurring_event(client, admin, new_recurring_event):
     response = client.get(
@@ -672,6 +691,7 @@ def test_update_recurring_event(client, admin, new_recurring_event):
     assert response_data[0]["title"] == "Temporary Event"
     for event in response_data[1:]:
         assert event["title"] == "Updated Event"
+
 
 def test_delete_recurring_event(client, admin, new_recurring_event):
     response = client.get(

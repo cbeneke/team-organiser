@@ -230,4 +230,3 @@ def test_delete_self(client, new_user):
     print(response_data)
 
     assert response.status_code == 200
-

@@ -13,17 +13,17 @@ import sqlalchemy as sa
 from src.database import GUID
 
 # revision identifiers, used by Alembic.
-revision: str = 'a8235af7d26b'
-down_revision: Union[str, None] = '669294669a7e'
+revision: str = "a8235af7d26b"
+down_revision: Union[str, None] = "669294669a7e"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column('events', sa.Column('series_id', GUID(), nullable=True))
+    op.add_column("events", sa.Column("series_id", GUID(), nullable=True))
     pass
 
 
 def downgrade() -> None:
-    op.drop_column('events', 'series_id')
+    op.drop_column("events", "series_id")
     pass
