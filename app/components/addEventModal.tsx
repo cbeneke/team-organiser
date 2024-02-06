@@ -29,6 +29,7 @@ const AddEventModal = (props: AddEventModalProps) => {
     const {setVisible, selectedDate} = props;
     const auth = React.useContext(AuthContext);
     const queryClient = useQueryClient()
+    const [saveEnabled, setSaveEnabled] = useState(true);
 
     async function fetchUsers() {
         // TODO Remove hardcoded filter as soon as team assignment is implemented
@@ -67,17 +68,21 @@ const AddEventModal = (props: AddEventModalProps) => {
     };
 
     async function saveEvent(token: string, event: NewEvent) {
-        postEvent(token, event).then((response) => {
-            // An event ID is only generated for successful event creations
-            if (response && response.id) {
-                queryClient.invalidateQueries({ queryKey: ['events'] })
-                closeModal();
-            } else {
+        if (saveEnabled) {
+            setSaveEnabled(false);
+            postEvent(token, event).then((response) => {
+                // An event ID is only generated for successful event creations
+                if (response && response.id) {
+                    queryClient.invalidateQueries({ queryKey: ['events'] })
+                    closeModal();
+                } else {
+                    setError(strings.ERRORS.EVENT_SAVE)
+                }
+            }).catch((error) => {
                 setError(strings.ERRORS.EVENT_SAVE)
-            }
-        }).catch((error) => {
-            setError(strings.ERRORS.EVENT_SAVE)
-        });
+            });
+            setSaveEnabled(true);
+        }
     }
 
     const [newEvent, setNewEvent] = useState<NewEvent>(newEventProps);
