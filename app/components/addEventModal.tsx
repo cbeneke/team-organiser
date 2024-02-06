@@ -13,19 +13,20 @@ import { MultipleChoiceOption, TextOption, TimeOption } from './editEventOptions
 
 interface AddEventModalProps {
     setVisible: (visible: boolean) => void;
+    selectedDate?: string;
 }
 
-function initDate(offsetHours: number) {
-    let date = new Date(Date.now())
+function initDate(selectedDate: string, offsetHours: number) {
+    let date = new Date(selectedDate)
     date.setMilliseconds(0)
     date.setSeconds(0)
     date.setMinutes(0)
-    date.setHours(date.getHours() + offsetHours + 2) // TODO: Make this timezone aware
+    date.setHours(new Date(Date.now()).getHours() + offsetHours + 2) // TODO: Make this timezone independent
     return date.toISOString()
 }
 
 const AddEventModal = (props: AddEventModalProps) => {
-    const {setVisible} = props;
+    const {setVisible, selectedDate} = props;
     const auth = React.useContext(AuthContext);
     const queryClient = useQueryClient()
 
@@ -42,12 +43,19 @@ const AddEventModal = (props: AddEventModalProps) => {
     const newEventProps = {
         title: "",  
         description: "",
-        start_time: initDate(0), // Initialise StartDate with upcoming hour
-        end_time: initDate(2), // Initialise EndDate with upcoming hour + 2
+        start_time: initDate(selectedDate, 0), // Initialise StartDate with upcoming hour on selected Date
+        end_time: initDate(selectedDate, 2), // Initialise EndDate with upcoming hour + 2 on selected Date
         invitees: query.data?.users ? query.data.users : [],
         display_color: "",
         recurrence: "once",
     }
+    
+    useEffect(() => {
+        setNewEvent({...newEventProps,
+            start_time: initDate(selectedDate, 0),
+            end_time: initDate(selectedDate, 2),
+        });
+    }, [selectedDate])
 
     const strings = getStrings(auth.user?.language ? auth.user.language : 'de');
     const [error, setError] = useState('');

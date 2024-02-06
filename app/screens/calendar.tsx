@@ -154,6 +154,7 @@ const Calendar = (props: Props) => {
   const [addEventModalVisible, setAddEventModalVisible] = useState(false);
   const addEventModalProps = useRef({
     setVisible: setAddEventModalVisible,
+    selectedDate: currentDay,
   })
 
   const renderItem = useCallback(({item}: any) => {
@@ -185,7 +186,7 @@ const Calendar = (props: Props) => {
       <CalendarProvider
         date={extractDate()}
         theme={todayBtnTheme.current}
-        onDateChanged={setCurrentDay}
+        onDateChanged={(date) => {setCurrentDay(date); addEventModalProps.current.selectedDate = date;}}
       >
         {weekView ? (
           <WeekCalendar
