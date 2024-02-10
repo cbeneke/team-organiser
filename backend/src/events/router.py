@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, status
 from typing import Annotated, Optional
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import date, timedelta
 
 from src.database import get_db
 from src.utils import all_fields_are_none
@@ -79,15 +79,19 @@ async def router_get_events(
     return events
 
 
-@router.post("/", response_model=ResponseEvent, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ResponseEvent | list[ResponseEvent], status_code=status.HTTP_201_CREATED)
 async def router_add_event(
     new: NewEvent,
     user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     event = add_event(new, user, db)
-    if new.recurrence != RecurrenceType.once:
-        add_series(new, event, db)
+    # TODO: This needs to handle non-weekly recurrences at some point
+    match new.recurrence:
+        case RecurrenceType.once:
+            event = add_event(new, user, db)
+        case RecurrenceType.weekly:
+            event = add_series(new, user, timedelta(weeks=1), 52, db)
 
     return event
 
