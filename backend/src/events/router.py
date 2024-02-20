@@ -85,7 +85,6 @@ async def router_add_event(
     user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    event = add_event(new, user, db)
     # TODO: This needs to handle non-weekly recurrences at some point
     match new.recurrence:
         case RecurrenceType.once:
@@ -114,10 +113,12 @@ async def router_delete_event(
     if not is_admin_or_self(user, event.owner, db):
         raise AccessDenied
 
+    is_series = event.series_id is not None
+
     db.delete(event)
     db.query(DBEventResponses).filter(DBEventResponses.event == event).delete()
 
-    if update_all:
+    if is_series and update_all:
         events = (
             db.query(DBEvents)
             .filter(

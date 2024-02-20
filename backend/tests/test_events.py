@@ -256,6 +256,19 @@ def test_add_event(client, user):
     assert response_data["owner"]["id"] == user["id"]
     assert len(response_data["responses"]) == 1
 
+    response = client.get(
+        "/events/",
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 1
+
+
+
 
 def test_add_event_owner_deduplication(client, user):
     response = client.get(
@@ -599,7 +612,7 @@ def test_user_accept_non_invited(client, admin, user, new_event):
 #  - Get series
 #  - Update series
 #  - Delete series
-
+#  - Ensure event with series flag delete does not delete other events
 
 def test_add_recurring_event(client, admin):
     response = client.post(
@@ -726,3 +739,50 @@ def test_delete_recurring_event(client, admin, new_recurring_event):
 
     assert response.status_code == 200
     assert len(response_data) == 12
+
+def test_delete_event_with_update_all_flag(client, admin, new_event):
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Test Event",
+            "description": "Test Description",
+            "start_time": "2023-01-01T12:00:00",
+            "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
+        },
+        headers={
+            "content-type": "application/json",
+            "Authorization": f"Bearer {admin['token']}",
+        },
+    )
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 201
+    assert "id" in response_data
+
+
+    response = client.delete(
+        f"/events/{response_data['id']}",
+        params={"update_all": "true"},
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+    response = client.get(
+        "/events/",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    for event in response_data:
+        print(event["title"])
+
+    assert response.status_code == 200
+    assert len(response_data) == 1
