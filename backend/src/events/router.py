@@ -79,7 +79,11 @@ async def router_get_events(
     return events
 
 
-@router.post("/", response_model=ResponseEvent | list[ResponseEvent], status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=ResponseEvent | list[ResponseEvent],
+    status_code=status.HTTP_201_CREATED,
+)
 async def router_add_event(
     new: NewEvent,
     user: ResponseUser = Depends(get_current_active_user),

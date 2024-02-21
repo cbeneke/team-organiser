@@ -56,7 +56,9 @@ def add_event(
     return event
 
 
-def add_series(new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session):
+def add_series(
+    new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session
+):
     base_id = None
     events = []
 
