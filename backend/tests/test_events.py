@@ -64,7 +64,7 @@ def new_recurring_event(admin, user, client):
     )
     print(response.json())
     response_data = response.json()
-    id = response_data["id"]
+    id = response_data[0]["id"]
 
     yield {"id": id}
 
@@ -633,12 +633,13 @@ def test_add_recurring_event(client, admin):
     print(response_data)
 
     assert response.status_code == 201
-    assert "id" in response_data
-    assert "series_id" in response_data
-    assert response_data["id"] == response_data["series_id"]
+    for event in response_data:
+        assert "id" in event
+        assert "series_id" in event
+        assert response_data[0]["id"] == event["series_id"]
 
     response = client.delete(
-        f"/events/{response_data['id']}",
+        f"/events/{response_data[0]['id']}",
         params={"update_all": "true"},
         headers={"Authorization": f"Bearer {admin['token']}"},
     )
@@ -761,6 +762,8 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
     assert response.status_code == 201
     assert "id" in response_data
 
+    event_id = response_data["id"]
+
     response = client.get(
         "/events/",
         headers={"Authorization": f"Bearer {admin['token']}"},
@@ -773,7 +776,7 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
     response_length = len(response_data)
 
     response = client.delete(
-        f"/events/{response_data['id']}",
+        f"/events/{event_id}",
         params={"update_all": "true"},
         headers={"Authorization": f"Bearer {admin['token']}"},
     )
