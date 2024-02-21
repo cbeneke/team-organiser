@@ -78,6 +78,7 @@ def add_series(
 
     return events
 
+
 def update_event(
     db: Session,
     event: ResponseEvent,

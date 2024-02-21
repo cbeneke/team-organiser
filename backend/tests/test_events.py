@@ -4,13 +4,17 @@ import datetime
 from .fixtures import admin, user, client, db
 
 FIXED_DATETIME = datetime.datetime(2023, 1, 1, 10, 0, 0)
+
+
 @pytest.fixture
 def patch_datetime_now(monkeypatch):
     class fixeddatetime(datetime.datetime):
         @classmethod
         def now(cls):
             return FIXED_DATETIME
-    monkeypatch.setattr(datetime, 'datetime', fixeddatetime)
+
+    monkeypatch.setattr(datetime, "datetime", fixeddatetime)
+
 
 @pytest.fixture(scope="function")
 def new_event(patch_datetime_now, admin, user, client):
@@ -622,6 +626,7 @@ def test_user_accept_non_invited(client, admin, user, new_event):
 #  - Delete series
 #  - Ensure event with series flag delete does not delete other events
 
+
 def test_add_recurring_event(client, admin):
     response = client.post(
         "/events/",
@@ -748,6 +753,7 @@ def test_delete_recurring_event(client, admin, new_recurring_event):
 
     assert response.status_code == 200
     assert len(response_data) == 12
+
 
 def test_delete_event_with_update_all_flag(client, admin, new_event):
     response = client.post(

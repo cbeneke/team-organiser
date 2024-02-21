@@ -21,6 +21,7 @@ def get_event(
 
     return event
 
+
 def get_active_event(
     event: get_event,
 ) -> ResponseEvent:
