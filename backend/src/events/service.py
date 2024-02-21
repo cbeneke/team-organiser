@@ -53,7 +53,9 @@ def add_event(
     return event
 
 
-def add_series(new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session):
+def add_series(
+    new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session
+):
     base_id = None
     events = []
 
@@ -72,6 +74,7 @@ def add_series(new: NewEvent, user: ResponseUser, delta: timedelta, occurances: 
         new.end_time += delta
 
     return events
+
 
 def update_event(
     db: Session,

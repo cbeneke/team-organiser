@@ -268,8 +268,6 @@ def test_add_event(client, user):
     assert len(response_data) == 1
 
 
-
-
 def test_add_event_owner_deduplication(client, user):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
@@ -614,6 +612,7 @@ def test_user_accept_non_invited(client, admin, user, new_event):
 #  - Delete series
 #  - Ensure event with series flag delete does not delete other events
 
+
 def test_add_recurring_event(client, admin):
     response = client.post(
         "/events/",
@@ -740,6 +739,7 @@ def test_delete_recurring_event(client, admin, new_recurring_event):
     assert response.status_code == 200
     assert len(response_data) == 12
 
+
 def test_delete_event_with_update_all_flag(client, admin, new_event):
     response = client.post(
         "/events/",
@@ -760,7 +760,6 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
 
     assert response.status_code == 201
     assert "id" in response_data
-
 
     response = client.delete(
         f"/events/{response_data['id']}",
