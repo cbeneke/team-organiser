@@ -3,6 +3,7 @@ import { StyleSheet, Text, Pressable, View } from 'react-native';
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
+import { throttle } from 'lodash';
 
 import { themeColor, lightThemeColor } from '../helper/theme';
 import { NewEvent } from '../types';
@@ -29,7 +30,6 @@ const AddEventModal = (props: AddEventModalProps) => {
     const {setVisible, selectedDate} = props;
     const auth = React.useContext(AuthContext);
     const queryClient = useQueryClient()
-    const [saveEnabled, setSaveEnabled] = useState(true);
 
     async function fetchUsers() {
         // TODO Remove hardcoded filter as soon as team assignment is implemented
@@ -67,23 +67,20 @@ const AddEventModal = (props: AddEventModalProps) => {
         setVisible(false);
     };
 
-    async function saveEvent(token: string, event: NewEvent) {
-        if (saveEnabled) {
-            setSaveEnabled(false);
-            postEvent(token, event).then((response) => {
-                // An event ID is only generated for successful event creations
-                if (response && response.id) {
-                    queryClient.invalidateQueries({ queryKey: ['events'] })
-                    closeModal();
-                } else {
-                    setError(strings.ERRORS.EVENT_SAVE)
-                }
-            }).catch((error) => {
-                setError(strings.ERRORS.EVENT_SAVE)
-            });
-            setSaveEnabled(true);
-        }
-    }
+    const throttleSaveEvent = throttle(saveEvent, 1000);
+    async function saveEvent (token: string, event: NewEvent) {
+        postEvent(token, event).then((response) => {
+            // An event ID is only generated for successful event creations
+            if (response && response.id) {
+                queryClient.invalidateQueries({ queryKey: ['events'] })
+                closeModal();
+            } else {
+                setError(strings.ERRORS.EVENT_SAVE + "\n\nDetail: " + response.detail)
+            }
+        }).catch((error) => {
+            setError(strings.ERRORS.EVENT_SAVE + "\n\nDetail: " + error.message)
+        });
+    };
 
     const [newEvent, setNewEvent] = useState<NewEvent>(newEventProps);
 
@@ -126,7 +123,10 @@ const AddEventModal = (props: AddEventModalProps) => {
             </View>
             <Text style={styles.error}>{error}</Text>
             <View style={styles.footerView}>
-                <Pressable style={styles.button} onPress={async () => await saveEvent(auth.token, newEvent)}>
+                <Pressable
+                    style={styles.button}
+                    onPress={async () => await throttleSaveEvent(auth.token, newEvent)}
+                >
                     <Text style={styles.buttonText}>{strings.SAVE}</Text>
                 </Pressable>
             </View>

@@ -8,7 +8,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { AuthContext } from '../App';
-import Calendar from '../screens/calendar';
+import EventsCalendar from '../screens/calendar';
 import Profile from '../screens/profile';
 import getStrings from '../locales/translation';
 
@@ -29,7 +29,7 @@ function AppStack() {
         <Tab.Navigator>
           <Tab.Screen
             name="calendar"
-            component={Calendar}
+            component={EventsCalendar}
             options={{
               headerShown: false,
               tabBarLabel: strings.CALENDAR,

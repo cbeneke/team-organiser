@@ -53,22 +53,27 @@ def add_event(
     return event
 
 
-# TODO: This needs to handle non-weekly recurrences at some point
-def add_series(new: NewEvent, base: ResponseEvent, db: Session):
-    event_ids = [base.id]
+def add_series(
+    new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session
+):
+    base_id = None
+    events = []
+
     # TODO: This needs a refresh endpoint
-    for i in range(1, 52):
-        new.start_time = new.start_time + timedelta(weeks=i)
-        new.end_time = new.end_time + timedelta(weeks=i)
-
-        new_event = add_event(new, base.owner, db)
-        event_ids.append(new_event.id)
-
-    for id in event_ids:
-        event = db.query(DBEvents).get(id)
-        event.series_id = base.id
+    for _ in range(occurances):
+        event = add_event(new, user, db)
+        if base_id is None:
+            base_id = event.id
+        event.series_id = base_id
         db.commit()
         db.refresh(event)
+        events.append(event)
+
+        # Increase start- and end-time for next loop
+        new.start_time += delta
+        new.end_time += delta
+
+    return events
 
 
 def update_event(

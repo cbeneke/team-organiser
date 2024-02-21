@@ -64,7 +64,7 @@ def new_recurring_event(admin, user, client):
     )
     print(response.json())
     response_data = response.json()
-    id = response_data["id"]
+    id = response_data[0]["id"]
 
     yield {"id": id}
 
@@ -255,6 +255,17 @@ def test_add_event(client, user):
     assert response_data["display_color"] == "#000000"
     assert response_data["owner"]["id"] == user["id"]
     assert len(response_data["responses"]) == 1
+
+    response = client.get(
+        "/events/",
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == 1
 
 
 def test_add_event_owner_deduplication(client, user):
@@ -599,6 +610,7 @@ def test_user_accept_non_invited(client, admin, user, new_event):
 #  - Get series
 #  - Update series
 #  - Delete series
+#  - Ensure event with series flag delete does not delete other events
 
 
 def test_add_recurring_event(client, admin):
@@ -621,12 +633,13 @@ def test_add_recurring_event(client, admin):
     print(response_data)
 
     assert response.status_code == 201
-    assert "id" in response_data
-    assert "series_id" in response_data
-    assert response_data["id"] == response_data["series_id"]
+    for event in response_data:
+        assert "id" in event
+        assert "series_id" in event
+        assert response_data[0]["id"] == event["series_id"]
 
     response = client.delete(
-        f"/events/{response_data['id']}",
+        f"/events/{response_data[0]['id']}",
         params={"update_all": "true"},
         headers={"Authorization": f"Bearer {admin['token']}"},
     )
@@ -726,3 +739,60 @@ def test_delete_recurring_event(client, admin, new_recurring_event):
 
     assert response.status_code == 200
     assert len(response_data) == 12
+
+
+def test_delete_event_with_update_all_flag(client, admin, new_event):
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Test Event",
+            "description": "Test Description",
+            "start_time": "2023-01-01T12:00:00",
+            "end_time": "2023-01-01T13:00:00",
+            "display_color": "#000000",
+        },
+        headers={
+            "content-type": "application/json",
+            "Authorization": f"Bearer {admin['token']}",
+        },
+    )
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 201
+    assert "id" in response_data
+
+    event_id = response_data["id"]
+
+    response = client.get(
+        "/events/",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    response_length = len(response_data)
+
+    response = client.delete(
+        f"/events/{event_id}",
+        params={"update_all": "true"},
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+    response = client.get(
+        "/events/",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    assert len(response_data) == response_length - 1
