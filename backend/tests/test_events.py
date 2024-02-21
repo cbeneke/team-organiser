@@ -780,8 +780,5 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
     response_data = response.json()
     print(response_data)
 
-    for event in response_data:
-        print(event["title"])
-
     assert response.status_code == 200
     assert len(response_data) == 1
