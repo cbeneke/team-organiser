@@ -761,6 +761,17 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
     assert response.status_code == 201
     assert "id" in response_data
 
+    response = client.get(
+        "/events/",
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+    response_length = len(response_data)
+
     response = client.delete(
         f"/events/{response_data['id']}",
         params={"update_all": "true"},
@@ -781,4 +792,4 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
     print(response_data)
 
     assert response.status_code == 200
-    assert len(response_data) == 1
+    assert len(response_data) == response_length - 1
