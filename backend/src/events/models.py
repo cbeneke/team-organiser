@@ -13,6 +13,7 @@ class DBEvents(Base):
     series_id = sql.Column(GUID(), index=True, nullable=True)
     title = sql.Column(sql.String)
     description = sql.Column(sql.String)
+    locked_time = sql.Column(sql.DateTime, index=True)
     start_time = sql.Column(sql.DateTime, index=True)
     end_time = sql.Column(sql.DateTime, index=True)
     display_color = sql.Column(sql.String)

@@ -1,10 +1,19 @@
 import pytest
+import datetime
 
 from .fixtures import admin, user, client, db
 
+FIXED_DATETIME = datetime.datetime(2023, 1, 1, 10, 0, 0)
+@pytest.fixture
+def patch_datetime_now(monkeypatch):
+    class fixeddatetime(datetime.datetime):
+        @classmethod
+        def now(cls):
+            return FIXED_DATETIME
+    monkeypatch.setattr(datetime, 'datetime', fixeddatetime)
 
 @pytest.fixture(scope="function")
-def new_event(admin, user, client):
+def new_event(patch_datetime_now, admin, user, client):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
     )
@@ -150,6 +159,7 @@ def test_list_events_for_marked_date(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 200
+    assert datetime.datetime.now() == FIXED_DATETIME
     assert len(response_data) == 1
     assert response_data[0]["id"] == new_event["id"]
 

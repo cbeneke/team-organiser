@@ -30,10 +30,13 @@ def add_event(
     if new.title == "":
         raise EventTitleInvalid
 
+    locked_time = new.start_time - timedelta(hours=new.lock_hours_before)
+
     event = DBEvents(
         series_id=None,
         title=new.title,
         description=new.description,
+        locked_time=locked_time,
         start_time=new.start_time,
         end_time=new.end_time,
         display_color=new.display_color,
@@ -48,7 +51,7 @@ def add_event(
         new.invitees.append(owner)
 
     synchronise_invitees(db, event, new.invitees)
-    respond_to_event(db, event, owner, ResponseType.accepted)
+    set_event_response(db, event, owner, ResponseType.accepted)
 
     return event
 
@@ -133,7 +136,7 @@ def get_events(db: Session, start_time: datetime, end_time: datetime) -> Respons
     )
 
 
-def respond_to_event(
+def set_event_response(
     db: Session, event: ResponseEvent, user: ResponseUser, status: ResponseType
 ):
     response = (
