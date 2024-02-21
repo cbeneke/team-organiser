@@ -15,13 +15,13 @@ from src.events.schemas import (
     Response,
     RecurrenceType,
 )
-from src.events.dependencies import get_event
+from src.events.dependencies import get_event, get_active_event
 from src.events.service import (
     add_event,
     add_series,
     update_event,
     update_series,
-    respond_to_event,
+    set_event_response,
 )
 from src.events.utils import parse_timerange
 
@@ -144,7 +144,7 @@ async def router_delete_event(
 async def router_update_event(
     update: UpdateEvent,
     db: Session = Depends(get_db),
-    event: ResponseEvent = Depends(get_event),
+    event: ResponseEvent = Depends(get_active_event),
     user: ResponseUser = Depends(get_current_active_user),
 ):
     if not is_admin_or_self(user, event.owner, db):
@@ -166,9 +166,9 @@ async def router_update_event(
 async def router_set_event_response(
     status: ResponseType,
     db: Session = Depends(get_db),
-    event: ResponseEvent = Depends(get_event),
+    event: ResponseEvent = Depends(get_active_event),
     actor: ResponseUser = Depends(get_current_active_user),
 ):
-    response = respond_to_event(db, event, actor, status)
+    response = set_event_response(db, event, actor, status)
 
     return response
