@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: backend
-  namespace: websites
   labels:
     app.kubernetes.io/name: team-organiser
     app.kubernetes.io/component: backend
@@ -31,11 +30,11 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
-      #  - name: config
-      #    mountPath: /app/config
-      #volumes:
-      #- name: config
-      #  configMap:
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: config
+        configMap:
   volumeClaimTemplates:
   - apiVersion: v1
     kind: PersistentVolumeClaim

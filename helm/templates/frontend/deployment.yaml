@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: websites
   labels:
     app.kubernetes.io/name: team-organiser
     app.kubernetes.io/component: frontend
@@ -25,10 +24,10 @@ spec:
         ports:
         - name: http
           containerPort: 80
-    #    volumeMounts:
-    #    - name: config
-    #      mountPath: /app/config
-    #  volumes:
-    #  - name: config
-    #    configMap:
-    #      name: frontend
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: config
+        configMap:
+          name: frontend
