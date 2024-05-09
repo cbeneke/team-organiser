@@ -25,10 +25,10 @@ spec:
         ports:
         - name: http
           containerPort: 80
-        volumeMounts:
-        - name: config
-          mountPath: /app/config
-      volumes:
-      - name: config
-        configMap:
-          name: frontend
+    #    volumeMounts:
+    #    - name: config
+    #      mountPath: /app/config
+    #  volumes:
+    #  - name: config
+    #    configMap:
+    #      name: frontend
