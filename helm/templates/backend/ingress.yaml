@@ -1,26 +1,26 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: frontend
+  name: api
   labels:
     app.kubernetes.io/name: team-organiser
-    app.kubernetes.io/component: frontend
+    app.kubernetes.io/component: backend
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: nginx
   rules:
-  - host: {{ $.Values.webDomain }}
+  - host: {{ $.Values.apiDomain }}
     http:
       paths:
       - backend:
           service:
-            name: frontend
+            name: backend
             port:
               name: http
         path: /
         pathType: Prefix
   tls:
   - hosts:
-    - {{ $.Values.webDomain }}
-    secretName: {{ $.Values.webDomain | replace "." "-" }}-tls
+    - {{ $.Values.apiDomain }}
+    secretName: {{ $.Values.apiDomain | replace "." "-" }}-tls

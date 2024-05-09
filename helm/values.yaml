@@ -1,3 +1,4 @@
-hostname: ""
+webDomain: ""
+apiDomain: ""
 image:
-  tag: "1"
+  tag: ""
