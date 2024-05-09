@@ -23,7 +23,7 @@ spec:
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
         env:
         - name: DATABASE_URL
-          value: /db/database.sqlite3
+          value: sqlite:///db/database.sqlite3
         - name: JWT_SECRET_KEY
           value: {{ include "randHex" 32 }}
         command:
@@ -39,7 +39,7 @@ spec:
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
         env:
         - name: DATABASE_URL
-          value: /db/database.sqlite3
+          value: sqlite:///db/database.sqlite3
         - name: JWT_SECRET_KEY
           value: {{ include "randHex" 32 }}
         ports:
