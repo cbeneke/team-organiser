@@ -26,7 +26,7 @@ spec:
           value: /data/backend.db
         ports:
         - name: http
-          containerPort: 80
+          containerPort: 8000
         volumeMounts:
         - name: data
           mountPath: /data
