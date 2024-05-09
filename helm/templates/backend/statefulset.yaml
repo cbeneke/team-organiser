@@ -19,6 +19,14 @@ spec:
         app.kubernetes.io/component: backend
     spec:
       initContainers:
+      - name: db-init
+        image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        command:
+        - touch
+        - /data/backend.db
+        volumeMounts:
+        - name: data
+          mountPath: /data
       - name: db-migration
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
         env:
