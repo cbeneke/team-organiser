@@ -1,6 +1,6 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: backend
   namespace: websites
@@ -31,4 +31,8 @@ spec:
       #volumes:
       #- name: config
       #  configMap:
-      #    name: backend
+      volumeClaimTemplates:
+      - spec:
+          resources:
+            requests:
+              storage: 10Gi
