@@ -23,7 +23,7 @@ spec:
       - name: backend
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
         env:
-        - key: DATABASE_URL
+        - name: DATABASE_URL
           value: /data/backend.db
         ports:
         - name: http
