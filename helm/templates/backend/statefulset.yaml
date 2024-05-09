@@ -24,6 +24,8 @@ spec:
         env:
         - name: DATABASE_URL
           value: /data/backend.db
+        - name: JWT_SECRET_KEY
+          value: {{ include "randHex" 32 }}
         ports:
         - name: http
           containerPort: 8000
