@@ -22,17 +22,24 @@ spec:
       containers:
       - name: backend
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        environment:
+        - key: DATABASE_URL
+          value: /data/backend.db
         ports:
         - name: http
           containerPort: 80
-      #  volumeMounts:
+        volumeMounts:
+        - name: data
+          mountPath: /data
       #  - name: config
       #    mountPath: /app/config
       #volumes:
       #- name: config
       #  configMap:
       volumeClaimTemplates:
-      - spec:
+      - metadata:
+          name: data
+        spec:
           resources:
             requests:
               storage: 10Gi
