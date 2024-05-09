@@ -43,7 +43,7 @@ jobs:
       with:
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: cbeneke/team-organiser-backend:${{ needs.tag_name }}
+        tags: cbeneke/team-organiser-backend:${{ needs.prepare.outputs.tag_name }}
   web:
     runs-on: ubuntu-latest
     needs: prepare
@@ -65,4 +65,4 @@ jobs:
       with:
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: cbeneke/team-organiser-web:${{ needs.tag_name }}
+        tags: cbeneke/team-organiser-web:${{ needs.prepare.outputs.tag_name }}
