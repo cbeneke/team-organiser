@@ -23,7 +23,7 @@ spec:
         image: cbeneke/team-organiser-web:{{ $.Values.image.tag }}
         ports:
         - name: http
-          containerPort: 8081
+          containerPort: 19006
         volumeMounts:
         - name: config
           mountPath: /app/config
