@@ -36,10 +36,10 @@ spec:
       #volumes:
       #- name: config
       #  configMap:
-    volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        resources:
-          requests:
-            storage: 10Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      resources:
+        requests:
+          storage: 10Gi
