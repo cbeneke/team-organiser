@@ -1,4 +1,4 @@
 webDomain: ""
 apiDomain: ""
 image:
-  tag: ""
+  tag: dev
