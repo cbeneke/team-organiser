@@ -10,8 +10,8 @@ app = fastapi.FastAPI()
 
 origins = [
     "http://localhost:19006",
-    "https://pb.rootlink.de",
-    "https://pbdev.rootlink.de",
+    "https://pb.wirelab.org",
+    "https://pbdev.wirelab.org",
 ]
 
 app.add_middleware(
