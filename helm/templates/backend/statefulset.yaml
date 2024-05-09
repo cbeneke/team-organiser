@@ -18,6 +18,21 @@ spec:
         app.kubernetes.io/name: team-organiser
         app.kubernetes.io/component: backend
     spec:
+      initContainers:
+      - name: db-migration
+        image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        env:
+        - name: DATABASE_URL
+          value: /data/backend.db
+        - name: JWT_SECRET_KEY
+          value: {{ include "randHex" 32 }}
+        command:
+        - alembic
+        - upgrade
+        - head
+        volumeMounts:
+        - name: data
+          mountPath: /data
       containers:
       - name: backend
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
