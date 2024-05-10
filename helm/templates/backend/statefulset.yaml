@@ -21,6 +21,9 @@ spec:
       initContainers:
       - name: db-migration
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        {{- if (eq $.Values.image.tag "dev") }}
+        imagePullPolicy: always
+        {{- end }}
         env:
         - name: DATABASE_URL
           value: sqlite:////db/database.sqlite3
@@ -35,8 +38,10 @@ spec:
           mountPath: /db
       containers:
       - name: backend
-        image: cbeneke/team-organiser-backend:ca4cecf
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        {{- if (eq $.Values.image.tag "dev") }}
+        imagePullPolicy: always
+        {{- end }}
         env:
         - name: DATABASE_URL
           value: sqlite:////db/database.sqlite3
