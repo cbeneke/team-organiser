@@ -22,7 +22,7 @@ spec:
       - name: db-migration
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
         {{- if (eq $.Values.image.tag "dev") }}
-        imagePullPolicy: always
+        imagePullPolicy: Always
         {{- end }}
         env:
         - name: DATABASE_URL
@@ -40,7 +40,7 @@ spec:
       - name: backend
         image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
         {{- if (eq $.Values.image.tag "dev") }}
-        imagePullPolicy: always
+        imagePullPolicy: Always
         {{- end }}
         env:
         - name: DATABASE_URL

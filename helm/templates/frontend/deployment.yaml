@@ -22,7 +22,7 @@ spec:
       - name: frontend
         image: cbeneke/team-organiser-web:{{ $.Values.image.tag }}
         {{- if (eq $.Values.image.tag "dev") }}
-        imagePullPolicy: always
+        imagePullPolicy: Always
         {{- end }}
         env:
         - name: API_DOMAIN
