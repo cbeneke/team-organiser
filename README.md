@@ -62,4 +62,4 @@ alembic upgrade head
 ## Upstream documentation
 
 We are using [FastAPI](https://fastapi.tiangolo.com/) following these best practices:
-- https://github.com/zhanymkanov/fastapi-best-practices 
+- https://github.com/zhanymkanov/fastapi-best-practices

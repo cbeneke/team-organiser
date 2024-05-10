@@ -1,0 +1,4 @@
+apiVersion: v2
+name: team-organiser
+description: A Helm Chart to deploy the team-organiser in a minimal manner
+version: 0.0.1

@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: backend
+  labels:
+    app.kubernetes.io/name: team-organiser
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: team-organiser
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: team-organiser
+        app.kubernetes.io/component: backend
+    spec:
+      initContainers:
+      - name: db-migration
+        image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        {{- if (eq $.Values.image.tag "dev") }}
+        imagePullPolicy: Always
+        {{- end }}
+        env:
+        - name: DATABASE_URL
+          value: sqlite:////db/database.sqlite3
+        - name: JWT_SECRET_KEY
+          value: {{ include "randHex" 32 }}
+        command:
+        - alembic
+        - upgrade
+        - head
+        volumeMounts:
+        - name: data
+          mountPath: /db
+      containers:
+      - name: backend
+        image: cbeneke/team-organiser-backend:{{ $.Values.image.tag }}
+        {{- if (eq $.Values.image.tag "dev") }}
+        imagePullPolicy: Always
+        {{- end }}
+        env:
+        - name: DATABASE_URL
+          value: sqlite:////db/database.sqlite3
+        - name: JWT_SECRET_KEY
+          value: {{ include "randHex" 32 }}
+        ports:
+        - name: http
+          containerPort: 8000
+        volumeMounts:
+        - name: data
+          mountPath: /db
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: config
+        configMap:
+      securityContext:
+        fsGroup: 10001
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
