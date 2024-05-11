@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app.kubernetes.io/name: team-organiser
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: team-organiser
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: team-organiser
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: cbeneke/team-organiser-web:{{ $.Values.image.tag }}
+        {{- if (eq $.Values.image.tag "dev") }}
+        imagePullPolicy: Always
+        {{- end }}
+        env:
+        - name: API_DOMAIN
+          value: {{ $.Values.apiDomain }}
+        ports:
+        - name: http
+          containerPort: 19006
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: config
+        configMap:
+          name: frontend
