@@ -12,6 +12,7 @@ from src.events.exceptions import (
     EventDatesInvalid,
     EventResponseNotFound,
     EventTitleInvalid,
+    EventLockedTimeInvalid,
 )
 
 from src.users.models import DBUser
@@ -29,6 +30,9 @@ def add_event(
 
     if new.title == "":
         raise EventTitleInvalid
+
+    if new.lock_hours_before < 0:
+        raise EventLockedTimeInvalid
 
     locked_time = new.start_time - timedelta(hours=new.lock_hours_before)
 

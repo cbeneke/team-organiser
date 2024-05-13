@@ -24,3 +24,8 @@ EventIsLocked = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail="Event is locked",
 )
+
+EventLockedTimeInvalid = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="Event Locked Hours Before must be non-negative integer",
+)

@@ -15,7 +15,6 @@ class RecurrenceType(str, Enum):
 class BaseEvent(BaseModel):
     title: str
     description: str
-    locked_time: datetime
     start_time: datetime
     end_time: datetime
     display_color: str
@@ -46,6 +45,7 @@ class ResponseEvent(BaseEvent):
     series_id: Union[UUID, None] = None
     owner: ResponseUser
     responses: list[Response] = []
+    locked_time: datetime
 
     class Config:
         orm_mode = True

@@ -20,13 +20,3 @@ def get_event(
         raise EventNotFound
 
     return event
-
-
-def get_active_event(
-    event: get_event,
-) -> ResponseEvent:
-
-    if event.locked_time < datetime.now():
-        raise EventIsLocked
-
-    return event
