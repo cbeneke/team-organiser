@@ -17,6 +17,7 @@ class BaseEvent(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
+    lock_time: datetime
     display_color: str
 
 
@@ -37,7 +38,6 @@ class Response(BaseModel):
 class NewEvent(BaseEvent):
     invitees: list[ResponseUser] = []
     recurrence: RecurrenceType = RecurrenceType.once
-    lock_hours_before: int = 0
 
 
 class ResponseEvent(BaseEvent):
@@ -45,7 +45,6 @@ class ResponseEvent(BaseEvent):
     series_id: Union[UUID, None] = None
     owner: ResponseUser
     responses: list[Response] = []
-    locked_time: datetime
 
     class Config:
         orm_mode = True
@@ -58,9 +57,9 @@ class EventResponse(Response):
 class UpdateEvent(BaseModel):
     title: Union[str, None] = None
     description: Union[str, None] = None
-    lock_hours_before: Union[int, None] = None
     start_time: Union[datetime, None] = None
     end_time: Union[datetime, None] = None
+    lock_time: Union[datetime, None] = None
     display_color: Union[str, None] = None
     invitees: list[ResponseUser] = None
     update_all: bool = False

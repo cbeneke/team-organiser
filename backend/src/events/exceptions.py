@@ -7,7 +7,7 @@ EventNotFound = HTTPException(
 
 EventDatesInvalid = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
-    detail="Event Start Date must be before End Date",
+    detail="Event Start Time must be before End Time",
 )
 
 EventResponseNotFound = HTTPException(
@@ -27,5 +27,5 @@ EventIsLocked = HTTPException(
 
 EventLockedTimeInvalid = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
-    detail="Event Locked Hours Before must be non-negative integer",
+    detail="Event Lock Time must be before Start Time",
 )

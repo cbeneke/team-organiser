@@ -20,12 +20,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column("events", sa.Column("locked_time", sa.DateTime, index=True))
-    # Initialize locked_time with start_time
-    op.execute("UPDATE events SET locked_time = start_time")
+    op.add_column("events", sa.Column("lock_time", sa.DateTime, index=True))
+    # Initialize lock_time with start_time
+    op.execute("UPDATE events SET lock_time = start_time")
     pass
 
 
 def downgrade() -> None:
-    op.drop_column("events", "locked_time")
+    op.drop_column("events", "lock_time")
     pass

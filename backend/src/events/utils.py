@@ -31,4 +31,4 @@ def is_admin_or_unlocked(actor: ResponseUser, event: ResponseEvent, db: Session)
     if is_admin(actor, db):
         return True
 
-    return event.locked_time < datetime.now()
+    return event.lock_time < datetime.now()

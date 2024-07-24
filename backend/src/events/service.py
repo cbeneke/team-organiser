@@ -31,16 +31,14 @@ def add_event(
     if new.title == "":
         raise EventTitleInvalid
 
-    if new.lock_hours_before < 0:
+    if new.start_time < new.lock_time:
         raise EventLockedTimeInvalid
-
-    locked_time = new.start_time - timedelta(hours=new.lock_hours_before)
 
     event = DBEvents(
         series_id=None,
         title=new.title,
         description=new.description,
-        locked_time=locked_time,
+        lock_time=new.lock_time,
         start_time=new.start_time,
         end_time=new.end_time,
         display_color=new.display_color,
