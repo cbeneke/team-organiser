@@ -65,6 +65,7 @@ def new_recurring_event(admin, user, client):
         json={
             "title": "Temporary Event",
             "description": "Temporary Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
@@ -99,6 +100,7 @@ def admin_only_event(admin, client):
         json={
             "title": "Temporary Event",
             "description": "Temporary Description",
+            "lock_time": "2023-01-01T13:00:00",
             "start_time": "2023-01-01T13:00:00",
             "end_time": "2023-01-01T14:00:00",
             "display_color": "#000000",
@@ -249,6 +251,7 @@ def test_add_event(client, user):
         json={
             "title": "Test Event",
             "description": "Test Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
@@ -295,6 +298,7 @@ def test_add_event_owner_deduplication(client, user):
         json={
             "title": "Test Event",
             "description": "Test Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
@@ -374,6 +378,7 @@ def test_user_update_own_event(client, user):
         json={
             "title": "Test Event",
             "description": "Test Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
@@ -487,6 +492,7 @@ def test_user_delete_own_event(client, user):
         json={
             "title": "Test Event",
             "description": "Test Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
@@ -635,6 +641,7 @@ def test_add_recurring_event(client, admin):
         json={
             "title": "Test Series",
             "description": "Test Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
@@ -763,6 +770,7 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
         json={
             "title": "Test Event",
             "description": "Test Description",
+            "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
             "display_color": "#000000",
