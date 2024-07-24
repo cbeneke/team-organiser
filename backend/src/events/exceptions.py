@@ -5,7 +5,7 @@ EventNotFound = HTTPException(
     detail="Event not found",
 )
 
-EventDatesInvalid = HTTPException(
+EventTimesInvalid = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="Event Start Time must be before End Time",
 )

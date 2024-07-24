@@ -3,7 +3,7 @@ from datetime import date, datetime
 from sqlalchemy.orm import Session
 
 from src.events.schemas import ResponseEvent
-from src.events.exceptions import EventDatesInvalid
+from src.events.exceptions import EventTimesInvalid
 
 from src.users.schemas import ResponseUser
 from src.users.utils import is_admin
@@ -18,11 +18,11 @@ def parse_timerange(
     if not end_date:
         end_date = date.max
 
-    if end_date < start_date:
-        raise EventDatesInvalid
-
     start_time = datetime.combine(start_date, datetime.min.time())
     end_time = datetime.combine(end_date, datetime.max.time())
+
+    if end_time < start_time:
+        raise EventTimesInvalid
 
     return start_time, end_time
 

@@ -9,7 +9,7 @@ from src.events.schemas import (
     UpdateEvent,
 )
 from src.events.exceptions import (
-    EventDatesInvalid,
+    EventTimesInvalid,
     EventResponseNotFound,
     EventTitleInvalid,
     EventLockedTimeInvalid,
@@ -26,7 +26,7 @@ def add_event(
     db: Session,
 ):
     if new.start_time >= new.end_time:
-        raise EventDatesInvalid
+        raise EventTimesInvalid
 
     if new.title == "":
         raise EventTitleInvalid
