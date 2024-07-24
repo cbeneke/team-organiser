@@ -8,6 +8,7 @@ from src.events.exceptions import EventDatesInvalid
 from src.users.schemas import ResponseUser
 from src.users.utils import is_admin
 
+
 def parse_timerange(
     start_date: Optional[date], end_date: Optional[date]
 ) -> tuple[datetime, datetime]:
