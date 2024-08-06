@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+import datetime
 
 from src.events.models import DBEvents, DBEventResponses
 from src.events.schemas import (
@@ -41,7 +41,6 @@ def add_event(
         lock_time=new.lock_time,
         start_time=new.start_time,
         end_time=new.end_time,
-        display_color=new.display_color,
         owner=owner,
     )
 
@@ -59,7 +58,7 @@ def add_event(
 
 
 def add_series(
-    new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session
+    new: NewEvent, user: ResponseUser, delta: datetime.timedelta, occurances: int, db: Session
 ):
     base_id = None
     events = []
@@ -88,22 +87,22 @@ def update_event(
 ) -> ResponseEvent:
     event = db.query(DBEvents).get(event.id)
 
-    if update.title:
+    if update.title is not None:
         event.title = update.title
 
-    if update.description:
+    if update.description is not None:
         event.description = update.description
 
-    if update.start_time:
+    if update.lock_time is not None:
+        event.lock_time = update.lock_time
+
+    if update.start_time is not None:
         event.start_time = update.start_time
 
-    if update.end_time:
+    if update.end_time is not None:
         event.end_time = update.end_time
 
-    if update.display_color:
-        event.display_color = update.display_color
-
-    if update.invitees:
+    if update.invitees is not None:
         synchronise_invitees(db, event, update.invitees)
 
     db.commit()
@@ -132,7 +131,7 @@ def update_series(
     return events
 
 
-def get_events(db: Session, start_time: datetime, end_time: datetime) -> ResponseEvent:
+def get_events(db: Session, start_time: datetime.datetime, end_time: datetime.datetime) -> ResponseEvent:
     return (
         db.query(DBEvents)
         .filter(DBEvents.start_time <= end_time, DBEvents.end_time >= start_time)

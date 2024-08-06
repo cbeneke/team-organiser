@@ -16,7 +16,6 @@ class DBEvents(Base):
     lock_time = sql.Column(sql.DateTime, index=True)
     start_time = sql.Column(sql.DateTime, index=True)
     end_time = sql.Column(sql.DateTime, index=True)
-    display_color = sql.Column(sql.String)
     owner_id = sql.Column(GUID(), sql.ForeignKey("users.id"))
     owner = relationship("DBUser")
     responses = relationship("DBEventResponses", back_populates="event")

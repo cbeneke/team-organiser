@@ -1,7 +1,6 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from uuid import UUID
-from datetime import datetime
 
 from src.database import get_db
 

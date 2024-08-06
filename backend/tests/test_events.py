@@ -3,21 +3,20 @@ import datetime
 
 from .fixtures import admin, user, client, db
 
-FIXED_DATETIME = datetime.datetime(2023, 1, 1, 10, 0, 0)
+FIXED_DATETIME = datetime.datetime(2023, 1, 1, 10, 0)
 
-
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def patch_datetime_now(monkeypatch):
     class fixeddatetime(datetime.datetime):
         @classmethod
         def now(cls):
             return FIXED_DATETIME
 
-    monkeypatch.setattr(datetime, "datetime", fixeddatetime)
+    monkeypatch.setattr(datetime, 'datetime', fixeddatetime)
 
 
 @pytest.fixture(scope="function")
-def new_event(patch_datetime_now, admin, user, client):
+def new_event(admin, user, client):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
     )
@@ -31,7 +30,6 @@ def new_event(patch_datetime_now, admin, user, client):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
             "invitees": [user_object],
         },
         headers={
@@ -52,6 +50,40 @@ def new_event(patch_datetime_now, admin, user, client):
     except:
         pass
 
+@pytest.fixture(scope="function")
+def locked_event(admin, user, client):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
+    admin_object = response.json()
+
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Temporary Event",
+            "description": "Temporary Description",
+            "lock_time": "2023-01-01T08:00:00",
+            "start_time": "2023-01-01T12:00:00",
+            "end_time": "2023-01-01T13:00:00",
+            "invitees": [admin_object],
+        },
+        headers={
+            "content-type": "application/json",
+            "Authorization": f"Bearer {user['token']}",
+        },
+    )
+    print(response.json())
+    response_data = response.json()
+    id = response_data["id"]
+
+    yield {"id": id}
+
+    try:
+        client.delete(
+            f"/events/{id}", headers={"Authorization": f"Bearer {admin['token']}"}
+        )
+    except:
+        pass
 
 @pytest.fixture(scope="function")
 def new_recurring_event(admin, user, client):
@@ -68,7 +100,6 @@ def new_recurring_event(admin, user, client):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
             "invitees": [user_object],
             "recurrence": "weekly",
         },
@@ -103,7 +134,6 @@ def admin_only_event(admin, client):
             "lock_time": "2023-01-01T13:00:00",
             "start_time": "2023-01-01T13:00:00",
             "end_time": "2023-01-01T14:00:00",
-            "display_color": "#000000",
             "invitees": [],
         },
         headers={
@@ -254,7 +284,6 @@ def test_add_event(client, user):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
@@ -271,7 +300,6 @@ def test_add_event(client, user):
     assert response_data["lock_time"] == "2023-01-01T12:00:00"
     assert response_data["start_time"] == "2023-01-01T12:00:00"
     assert response_data["end_time"] == "2023-01-01T13:00:00"
-    assert response_data["display_color"] == "#000000"
     assert response_data["owner"]["id"] == user["id"]
     assert len(response_data["responses"]) == 1
 
@@ -301,7 +329,6 @@ def test_add_event_owner_deduplication(client, user):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
             "invitees": [user_object],
         },
         headers={
@@ -353,6 +380,7 @@ def test_get_event_not_found(client, user):
 #  - Update event as owner
 #  - Update invalid event ID
 #  - Update invitees
+#  - Update locked event
 
 
 def test_admin_update_event(client, admin, new_event):
@@ -381,7 +409,6 @@ def test_user_update_own_event(client, user):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
@@ -428,6 +455,7 @@ def test_user_update_event(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 403
+    assert response_data["detail"] == "Access denied"
 
 
 def test_update_event_not_found(client, admin):
@@ -466,6 +494,35 @@ def test_update_invitees(client, admin, new_event):
     assert len(response_data["responses"]) == 1
 
 
+def test_update_locked_event(client, admin, user, locked_event):
+    response = client.put(
+        f"/events/{locked_event['id']}",
+        json={
+            "title": "Other Event",
+        },
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 403
+    assert response_data["detail"] == "Event is locked"
+
+
+    response = client.put(
+        f"/events/{locked_event['id']}",
+        json={
+            "title": "Other Event",
+        },
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
 # Delete Event tests
 #  - Delete event as admin
 #  - Delete event as owner
@@ -495,7 +552,6 @@ def test_user_delete_own_event(client, user):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
@@ -525,6 +581,7 @@ def test_user_delete_event(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 403
+    assert response_data["detail"] == "Access denied"
 
 
 def test_delete_event_not_found(client, admin):
@@ -565,6 +622,7 @@ def test_delete_event_responses(client, admin, new_event):
 # Test Event Responses
 #  - Decline event as invited user
 #  - Accept event as not-invited user
+#  - Accept locked event
 
 
 def test_user_decline_event(client, user, new_event):
@@ -627,6 +685,31 @@ def test_user_accept_non_invited(client, admin, user, new_event):
     assert response_data["detail"] == "User not invited to event"
 
 
+def test_respond_locked_event(client, admin, user, locked_event):
+    response = client.put(
+        f"/events/{locked_event['id']}/respond",
+        params={"status": "accepted"},
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 403
+    assert response_data["detail"] == "Event is locked"
+
+    response = client.put(
+        f"/events/{locked_event['id']}/respond",
+        params={"status": "accepted"},
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+
 # Test Event Series
 #  - Create series
 #  - Get series
@@ -644,7 +727,6 @@ def test_add_recurring_event(client, admin):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
             "recurrence": "weekly",
         },
         headers={
@@ -773,7 +855,6 @@ def test_delete_event_with_update_all_flag(client, admin, new_event):
             "lock_time": "2023-01-01T12:00:00",
             "start_time": "2023-01-01T12:00:00",
             "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
         },
         headers={
             "content-type": "application/json",
