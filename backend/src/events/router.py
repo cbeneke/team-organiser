@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, status
 from typing import Annotated, Optional, Union
 from sqlalchemy.orm import Session
-import datetime
+from datetime import date, datetime, timedelta
 
 from src.database import get_db
 from src.utils import all_fields_are_none
@@ -39,8 +39,8 @@ router = APIRouter()
 
 @router.get("/", response_model=list[ResponseEvent])
 async def router_get_events(
-    start_date: Optional[Annotated[datetime.date, Form()]] = None,
-    end_date: Optional[Annotated[datetime.date, Form()]] = None,
+    start_date: Optional[Annotated[date, Form()]] = None,
+    end_date: Optional[Annotated[date, Form()]] = None,
     user: ResponseUser = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
@@ -62,8 +62,8 @@ async def router_get_events(
 
 @router.get("/all", response_model=list[ResponseEvent])
 async def router_get_events(
-    start_date: Optional[Annotated[datetime.date, Form()]] = None,
-    end_date: Optional[Annotated[datetime.date, Form()]] = None,
+    start_date: Optional[Annotated[date, Form()]] = None,
+    end_date: Optional[Annotated[date, Form()]] = None,
     user: ResponseUser = Depends(get_current_active_admin_user),
     db: Session = Depends(get_db),
 ):
@@ -97,7 +97,7 @@ async def router_add_event(
             event = add_event(new, user, db)
             return event
         case RecurrenceType.weekly:
-            events = add_series(new, user, datetime.timedelta(weeks=1), 52, db)
+            events = add_series(new, user, timedelta(weeks=1), 52, db)
             return events
 
 

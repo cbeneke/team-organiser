@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
-import datetime
+from datetime import datetime
 from typing import Union
 
 from src.users.schemas import ResponseUser
@@ -15,9 +15,9 @@ class RecurrenceType(str, Enum):
 class BaseEvent(BaseModel):
     title: str
     description: str
-    start_time: datetime.datetime
-    end_time: datetime.datetime
-    lock_time: datetime.datetime
+    start_time: datetime
+    end_time: datetime
+    lock_time: datetime
 
 
 class ResponseType(str, Enum):
@@ -56,8 +56,8 @@ class EventResponse(Response):
 class UpdateEvent(BaseModel):
     title: Union[str, None] = None
     description: Union[str, None] = None
-    start_time: Union[datetime.datetime, None] = None
-    end_time: Union[datetime.datetime, None] = None
-    lock_time: Union[datetime.datetime, None] = None
+    start_time: Union[datetime, None] = None
+    end_time: Union[datetime, None] = None
+    lock_time: Union[datetime, None] = None
     invitees: list[ResponseUser] = None
     update_all: bool = False

@@ -1,6 +1,4 @@
 import pytest
-import datetime
-
 from .fixtures import admin, user, client, db, times
 
 @pytest.fixture(scope="function")

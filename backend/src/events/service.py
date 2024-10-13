@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-import datetime
+from datetime import datetime, timedelta
 
 from src.events.models import DBEvents, DBEventResponses
 from src.events.schemas import (
@@ -58,7 +58,7 @@ def add_event(
 
 
 def add_series(
-    new: NewEvent, user: ResponseUser, delta: datetime.timedelta, occurances: int, db: Session
+    new: NewEvent, user: ResponseUser, delta: timedelta, occurances: int, db: Session
 ):
     base_id = None
     events = []
@@ -131,7 +131,7 @@ def update_series(
     return events
 
 
-def get_events(db: Session, start_time: datetime.datetime, end_time: datetime.datetime) -> ResponseEvent:
+def get_events(db: Session, start_time: datetime, end_time: datetime) -> ResponseEvent:
     return (
         db.query(DBEvents)
         .filter(DBEvents.start_time <= end_time, DBEvents.end_time >= start_time)
