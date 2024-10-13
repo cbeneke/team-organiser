@@ -1,6 +1,7 @@
 import pytest
 from .fixtures import admin, user, client, db, times
 
+
 @pytest.fixture(scope="function")
 def new_event(admin, user, client, times):
     response = client.get(
@@ -36,6 +37,7 @@ def new_event(admin, user, client, times):
     except:
         pass
 
+
 @pytest.fixture(scope="function")
 def locked_event(admin, user, client, times):
     response = client.get(
@@ -70,6 +72,7 @@ def locked_event(admin, user, client, times):
         )
     except:
         pass
+
 
 @pytest.fixture(scope="function")
 def new_recurring_event(admin, user, client, times):
@@ -495,7 +498,6 @@ def test_update_locked_event(client, admin, user, locked_event):
     assert response.status_code == 403
     assert response_data["detail"] == "Event is locked"
 
-
     response = client.put(
         f"/events/{locked_event['id']}",
         json={
@@ -508,6 +510,7 @@ def test_update_locked_event(client, admin, user, locked_event):
     print(response_data)
 
     assert response.status_code == 200
+
 
 # Delete Event tests
 #  - Delete event as admin

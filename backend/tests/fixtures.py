@@ -50,6 +50,7 @@ def times():
         "tomorrow": (now + timedelta(days=1)).date().isoformat(),
     }
 
+
 @pytest.fixture(scope="session")
 def admin(client):
     response = client.post(
