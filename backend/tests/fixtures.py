@@ -4,6 +4,7 @@ import pytest
 import sqlite3
 from alembic.config import Config
 from alembic import command
+from datetime import datetime, timedelta
 
 from src.main import app
 from .utils import get_random_string
@@ -33,6 +34,21 @@ def client(db):
     client = TestClient(app)
     yield client
 
+
+@pytest.fixture(scope="session")
+def times():
+    now = datetime.now()
+    return {
+        "two_hours_ago": (now - timedelta(hours=2)).isoformat(),
+        "one_hour_ago": (now - timedelta(hours=1)).isoformat(),
+        "now": now.isoformat(),
+        "in_one_hour": (now + timedelta(hours=1)).isoformat(),
+        "in_two_hours": (now + timedelta(hours=2)).isoformat(),
+        "in_three_hours": (now + timedelta(hours=3)).isoformat(),
+        "yesterday": (now - timedelta(days=1)).date().isoformat(),
+        "today": now.date().isoformat(),
+        "tomorrow": (now + timedelta(days=1)).date().isoformat(),
+    }
 
 @pytest.fixture(scope="session")
 def admin(client):
