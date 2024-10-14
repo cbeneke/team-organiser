@@ -9,9 +9,10 @@ from src.events.schemas import (
     UpdateEvent,
 )
 from src.events.exceptions import (
-    EventDatesInvalid,
+    EventTimesInvalid,
     EventResponseNotFound,
     EventTitleInvalid,
+    EventLockedTimeInvalid,
 )
 
 from src.users.models import DBUser
@@ -25,18 +26,21 @@ def add_event(
     db: Session,
 ):
     if new.start_time >= new.end_time:
-        raise EventDatesInvalid
+        raise EventTimesInvalid
 
     if new.title == "":
         raise EventTitleInvalid
+
+    if new.start_time < new.lock_time:
+        raise EventLockedTimeInvalid
 
     event = DBEvents(
         series_id=None,
         title=new.title,
         description=new.description,
+        lock_time=new.lock_time,
         start_time=new.start_time,
         end_time=new.end_time,
-        display_color=new.display_color,
         owner=owner,
     )
 
@@ -48,7 +52,7 @@ def add_event(
         new.invitees.append(owner)
 
     synchronise_invitees(db, event, new.invitees)
-    respond_to_event(db, event, owner, ResponseType.accepted)
+    set_event_response(db, event, owner, ResponseType.accepted)
 
     return event
 
@@ -83,22 +87,22 @@ def update_event(
 ) -> ResponseEvent:
     event = db.query(DBEvents).get(event.id)
 
-    if update.title:
+    if update.title is not None:
         event.title = update.title
 
-    if update.description:
+    if update.description is not None:
         event.description = update.description
 
-    if update.start_time:
+    if update.lock_time is not None:
+        event.lock_time = update.lock_time
+
+    if update.start_time is not None:
         event.start_time = update.start_time
 
-    if update.end_time:
+    if update.end_time is not None:
         event.end_time = update.end_time
 
-    if update.display_color:
-        event.display_color = update.display_color
-
-    if update.invitees:
+    if update.invitees is not None:
         synchronise_invitees(db, event, update.invitees)
 
     db.commit()
@@ -136,7 +140,7 @@ def get_events(db: Session, start_time: datetime, end_time: datetime) -> Respons
     )
 
 
-def respond_to_event(
+def set_event_response(
     db: Session, event: ResponseEvent, user: ResponseUser, status: ResponseType
 ):
     response = (

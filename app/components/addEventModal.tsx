@@ -47,7 +47,6 @@ const AddEventModal = (props: AddEventModalProps) => {
         start_time: initDate(selectedDate, 0), // Initialise StartDate with upcoming hour on selected Date
         end_time: initDate(selectedDate, 2), // Initialise EndDate with upcoming hour + 2 on selected Date
         invitees: query.data?.users ? query.data.users : [],
-        display_color: "",
         recurrence: "once",
     }
     

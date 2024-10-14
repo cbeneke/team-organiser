@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, Form, status
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Union
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
 
 from src.database import get_db
 from src.utils import all_fields_are_none
 
+from src.events.exceptions import EventIsLocked
 from src.events.models import DBEvents, DBEventResponses
 from src.events.schemas import (
     ResponseEvent,
@@ -21,9 +22,9 @@ from src.events.service import (
     add_series,
     update_event,
     update_series,
-    respond_to_event,
+    set_event_response,
 )
-from src.events.utils import parse_timerange
+from src.events.utils import parse_timerange, is_admin_or_unlocked
 
 from src.users.dependencies import (
     get_current_active_user,
@@ -55,6 +56,7 @@ async def router_get_events(
         .order_by(DBEvents.start_time)
         .all()
     )
+
     return events
 
 
@@ -81,7 +83,7 @@ async def router_get_events(
 
 @router.post(
     "/",
-    response_model=ResponseEvent | list[ResponseEvent],
+    response_model=Union[ResponseEvent, list[ResponseEvent]],
     status_code=status.HTTP_201_CREATED,
 )
 async def router_add_event(
@@ -93,10 +95,10 @@ async def router_add_event(
     match new.recurrence:
         case RecurrenceType.once:
             event = add_event(new, user, db)
+            return event
         case RecurrenceType.weekly:
-            event = add_series(new, user, timedelta(weeks=1), 52, db)
-
-    return event
+            events = add_series(new, user, timedelta(weeks=1), 52, db)
+            return events
 
 
 @router.get("/{event_id}", response_model=ResponseEvent)
@@ -140,7 +142,7 @@ async def router_delete_event(
     return {}
 
 
-@router.put("/{event_id}", response_model=ResponseEvent | list[ResponseEvent])
+@router.put("/{event_id}", response_model=Union[ResponseEvent, list[ResponseEvent]])
 async def router_update_event(
     update: UpdateEvent,
     db: Session = Depends(get_db),
@@ -149,6 +151,9 @@ async def router_update_event(
 ):
     if not is_admin_or_self(user, event.owner, db):
         raise AccessDenied
+
+    if not is_admin_or_unlocked(user, event, db):
+        raise EventIsLocked
 
     # Return event without update if no update is requested
     if all_fields_are_none(update):
@@ -169,6 +174,9 @@ async def router_set_event_response(
     event: ResponseEvent = Depends(get_event),
     actor: ResponseUser = Depends(get_current_active_user),
 ):
-    response = respond_to_event(db, event, actor, status)
+    if not is_admin_or_unlocked(actor, event, db):
+        raise EventIsLocked
+
+    response = set_event_response(db, event, actor, status)
 
     return response

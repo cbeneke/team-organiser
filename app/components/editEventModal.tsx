@@ -28,7 +28,6 @@ const EditEventModal = (props: EditEventModalProps) => {
         start_time: undefined,
         end_time: undefined,
         invitees: [],
-        display_color: undefined,
         update_all: false,
     }
     const [update, setUpdate] = useState<UpdateEvent>(emptyUpdate);
@@ -79,7 +78,6 @@ const EditEventModal = (props: EditEventModalProps) => {
             start_time: update.start_time != event.start_time ? update.start_time : undefined,
             end_time: update.end_time != event.end_time ? update.end_time : undefined,
             invitees: update.invitees,
-            display_color: undefined,
             update_all: update.update_all,
         }
 

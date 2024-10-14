@@ -6,7 +6,7 @@ from src.database import get_db
 
 from src.events.models import DBEvents
 from src.events.schemas import ResponseEvent
-from src.events.exceptions import EventNotFound
+from src.events.exceptions import EventNotFound, EventIsLocked
 
 
 def get_event(

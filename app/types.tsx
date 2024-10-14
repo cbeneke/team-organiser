@@ -27,7 +27,6 @@ export interface NewEvent {
     title: string;
     description: string;
     invitees: string[];
-    display_color: string;
     recurrence: string;
 }
 
@@ -46,7 +45,6 @@ export interface UpdateEvent {
     title?: string | undefined;
     description?: string | undefined;
     invitees?: string[] | undefined;
-    display_color?: string | undefined;
     update_all: boolean;
 }
 
