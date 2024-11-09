@@ -1,10 +1,9 @@
 import pytest
-
-from .fixtures import admin, user, client, db
+from .fixtures import admin, user, client, db, times
 
 
 @pytest.fixture(scope="function")
-def new_event(admin, user, client):
+def new_event(admin, user, client, times):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
     )
@@ -15,9 +14,9 @@ def new_event(admin, user, client):
         json={
             "title": "Temporary Event",
             "description": "Temporary Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
             "invitees": [user_object],
         },
         headers={
@@ -40,7 +39,43 @@ def new_event(admin, user, client):
 
 
 @pytest.fixture(scope="function")
-def new_recurring_event(admin, user, client):
+def locked_event(admin, user, client, times):
+    response = client.get(
+        "/users/me", headers={"Authorization": f"Bearer {admin['token']}"}
+    )
+    admin_object = response.json()
+
+    response = client.post(
+        "/events/",
+        json={
+            "title": "Temporary Event",
+            "description": "Temporary Description",
+            "lock_time": times["one_hour_ago"],
+            "start_time": times["now"],
+            "end_time": times["in_one_hour"],
+            "invitees": [admin_object],
+        },
+        headers={
+            "content-type": "application/json",
+            "Authorization": f"Bearer {user['token']}",
+        },
+    )
+    print(response.json())
+    response_data = response.json()
+    id = response_data["id"]
+
+    yield {"id": id}
+
+    try:
+        client.delete(
+            f"/events/{id}", headers={"Authorization": f"Bearer {admin['token']}"}
+        )
+    except:
+        pass
+
+
+@pytest.fixture(scope="function")
+def new_recurring_event(admin, user, client, times):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
     )
@@ -51,9 +86,9 @@ def new_recurring_event(admin, user, client):
         json={
             "title": "Temporary Event",
             "description": "Temporary Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
             "invitees": [user_object],
             "recurrence": "weekly",
         },
@@ -79,15 +114,15 @@ def new_recurring_event(admin, user, client):
 
 
 @pytest.fixture(scope="function")
-def admin_only_event(admin, client):
+def admin_only_event(admin, client, times):
     response = client.post(
         "/events/",
         json={
             "title": "Temporary Event",
             "description": "Temporary Description",
-            "start_time": "2023-01-01T13:00:00",
-            "end_time": "2023-01-01T14:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
             "invitees": [],
         },
         headers={
@@ -134,12 +169,13 @@ def test_list_own_events(client, user, new_event, admin_only_event):
     assert response_data[0]["id"] == new_event["id"]
 
 
-def test_list_events_for_marked_date(client, user, new_event):
+def test_list_events_for_marked_date(client, user, new_event, times):
+
     response = client.get(
         "/events/",
         params={
-            "start_date": "2023-01-01",
-            "end_date": "2023-01-01",
+            "start_date": times["today"],
+            "end_date": times["today"],
         },
         headers={
             "Authorization": f"Bearer {user['token']}",
@@ -154,12 +190,12 @@ def test_list_events_for_marked_date(client, user, new_event):
     assert response_data[0]["id"] == new_event["id"]
 
 
-def test_list_events_for_empty_date(client, user, new_event):
+def test_list_events_for_empty_date(client, user, new_event, times):
     response = client.get(
         "/events/",
         params={
-            "start_date": "2023-01-02",
-            "end_date": "2023-01-02",
+            "start_date": times["yesterday"],
+            "end_date": times["yesterday"],
         },
         headers={
             "Authorization": f"Bearer {user['token']}",
@@ -205,12 +241,12 @@ def test_list_all_events_as_admin(client, admin, new_event, admin_only_event):
     assert response_data[1]["id"] == admin_only_event["id"]
 
 
-def test_list_invalid_dates(client, user, new_event):
+def test_list_invalid_dates(client, user, new_event, times):
     response = client.get(
         "/events/",
         params={
-            "start_date": "2023-01-02",
-            "end_date": "2023-01-01",
+            "start_date": times["tomorrow"],
+            "end_date": times["today"],
         },
         headers={
             "Authorization": f"Bearer {user['token']}",
@@ -228,15 +264,15 @@ def test_list_invalid_dates(client, user, new_event):
 #  - Add new event with explicit owner invitation
 
 
-def test_add_event(client, user):
+def test_add_event(client, user, times):
     response = client.post(
         "/events/",
         json={
             "title": "Test Event",
             "description": "Test Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
         },
         headers={
             "content-type": "application/json",
@@ -250,9 +286,9 @@ def test_add_event(client, user):
     assert "id" in response_data
     assert response_data["title"] == "Test Event"
     assert response_data["description"] == "Test Description"
-    assert response_data["start_time"] == "2023-01-01T12:00:00"
-    assert response_data["end_time"] == "2023-01-01T13:00:00"
-    assert response_data["display_color"] == "#000000"
+    assert response_data["lock_time"] == times["in_one_hour"]
+    assert response_data["start_time"] == times["in_one_hour"]
+    assert response_data["end_time"] == times["in_two_hours"]
     assert response_data["owner"]["id"] == user["id"]
     assert len(response_data["responses"]) == 1
 
@@ -268,7 +304,7 @@ def test_add_event(client, user):
     assert len(response_data) == 1
 
 
-def test_add_event_owner_deduplication(client, user):
+def test_add_event_owner_deduplication(client, user, times):
     response = client.get(
         "/users/me", headers={"Authorization": f"Bearer {user['token']}"}
     )
@@ -279,9 +315,9 @@ def test_add_event_owner_deduplication(client, user):
         json={
             "title": "Test Event",
             "description": "Test Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
             "invitees": [user_object],
         },
         headers={
@@ -333,6 +369,7 @@ def test_get_event_not_found(client, user):
 #  - Update event as owner
 #  - Update invalid event ID
 #  - Update invitees
+#  - Update locked event
 
 
 def test_admin_update_event(client, admin, new_event):
@@ -352,15 +389,15 @@ def test_admin_update_event(client, admin, new_event):
     assert response_data["title"] == "Other Event"
 
 
-def test_user_update_own_event(client, user):
+def test_user_update_own_event(client, user, times):
     response = client.post(
         "/events/",
         json={
             "title": "Test Event",
             "description": "Test Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
         },
         headers={
             "content-type": "application/json",
@@ -407,6 +444,7 @@ def test_user_update_event(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 403
+    assert response_data["detail"] == "Access denied"
 
 
 def test_update_event_not_found(client, admin):
@@ -445,6 +483,35 @@ def test_update_invitees(client, admin, new_event):
     assert len(response_data["responses"]) == 1
 
 
+def test_update_locked_event(client, admin, user, locked_event):
+    response = client.put(
+        f"/events/{locked_event['id']}",
+        json={
+            "title": "Other Event",
+        },
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 403
+    assert response_data["detail"] == "Event is locked"
+
+    response = client.put(
+        f"/events/{locked_event['id']}",
+        json={
+            "title": "Other Event",
+        },
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+
 # Delete Event tests
 #  - Delete event as admin
 #  - Delete event as owner
@@ -465,15 +532,15 @@ def test_admin_delete_event(client, admin, new_event):
     assert response.status_code == 200
 
 
-def test_user_delete_own_event(client, user):
+def test_user_delete_own_event(client, user, times):
     response = client.post(
         "/events/",
         json={
             "title": "Test Event",
             "description": "Test Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
         },
         headers={
             "content-type": "application/json",
@@ -503,6 +570,7 @@ def test_user_delete_event(client, user, new_event):
     print(response_data)
 
     assert response.status_code == 403
+    assert response_data["detail"] == "Access denied"
 
 
 def test_delete_event_not_found(client, admin):
@@ -543,6 +611,7 @@ def test_delete_event_responses(client, admin, new_event):
 # Test Event Responses
 #  - Decline event as invited user
 #  - Accept event as not-invited user
+#  - Accept locked event
 
 
 def test_user_decline_event(client, user, new_event):
@@ -605,6 +674,31 @@ def test_user_accept_non_invited(client, admin, user, new_event):
     assert response_data["detail"] == "User not invited to event"
 
 
+def test_respond_locked_event(client, admin, user, locked_event):
+    response = client.put(
+        f"/events/{locked_event['id']}/respond",
+        params={"status": "accepted"},
+        headers={"Authorization": f"Bearer {user['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 403
+    assert response_data["detail"] == "Event is locked"
+
+    response = client.put(
+        f"/events/{locked_event['id']}/respond",
+        params={"status": "accepted"},
+        headers={"Authorization": f"Bearer {admin['token']}"},
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    assert response.status_code == 200
+
+
 # Test Event Series
 #  - Create series
 #  - Get series
@@ -613,15 +707,15 @@ def test_user_accept_non_invited(client, admin, user, new_event):
 #  - Ensure event with series flag delete does not delete other events
 
 
-def test_add_recurring_event(client, admin):
+def test_add_recurring_event(client, admin, times):
     response = client.post(
         "/events/",
         json={
             "title": "Test Series",
             "description": "Test Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
             "recurrence": "weekly",
         },
         headers={
@@ -741,15 +835,15 @@ def test_delete_recurring_event(client, admin, new_recurring_event):
     assert len(response_data) == 12
 
 
-def test_delete_event_with_update_all_flag(client, admin, new_event):
+def test_delete_event_with_update_all_flag(client, admin, new_event, times):
     response = client.post(
         "/events/",
         json={
             "title": "Test Event",
             "description": "Test Description",
-            "start_time": "2023-01-01T12:00:00",
-            "end_time": "2023-01-01T13:00:00",
-            "display_color": "#000000",
+            "lock_time": times["in_one_hour"],
+            "start_time": times["in_one_hour"],
+            "end_time": times["in_two_hours"],
         },
         headers={
             "content-type": "application/json",

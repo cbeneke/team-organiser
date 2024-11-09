@@ -17,7 +17,7 @@ class BaseEvent(BaseModel):
     description: str
     start_time: datetime
     end_time: datetime
-    display_color: str
+    lock_time: datetime
 
 
 class ResponseType(str, Enum):
@@ -58,6 +58,6 @@ class UpdateEvent(BaseModel):
     description: Union[str, None] = None
     start_time: Union[datetime, None] = None
     end_time: Union[datetime, None] = None
-    display_color: Union[str, None] = None
+    lock_time: Union[datetime, None] = None
     invitees: list[ResponseUser] = None
     update_all: bool = False

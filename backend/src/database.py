@@ -1,7 +1,7 @@
 import sqlalchemy as sql
+import sqlite3
 from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException, status
-
 from src.constants import DATABASE_URL
 
 
@@ -11,7 +11,13 @@ def get_db():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Required env variable DATABASE_URL not configured!",
         )
-    engine = sql.create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = sql.create_engine(
+        DATABASE_URL,
+        connect_args={
+            "check_same_thread": False,
+            "detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+        },
+    )
 
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = SessionLocal()
