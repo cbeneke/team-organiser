@@ -11,8 +11,8 @@ mkdir -p data/
 curl 'https://pb-api.rootlink.de/auth/register' \
     -X 'POST' \
     -H "Authorization: Bearer ${AUTH_TOKEN}" \
-    -H 'Origin: http://localhost:19006' \
-    -H 'Referer: http://localhost:19006/' \
+    -H 'Origin: http://localhost:5173' \
+    -H 'Referer: http://localhost:5173/' \
     -H 'Content-Type: application/x-www-form-urlencoded' \
     --data-raw "username=${USERNAME}&password=${PASSWORD}" \
     --compressed \
@@ -23,8 +23,8 @@ USER_ID=$(cat "data/${USERNAME}.json" | jq -r '.id')
 curl "https://pb-api.rootlink.de/users/${USER_ID}" \
     -X 'PUT' \
     -H "Authorization: Bearer ${AUTH_TOKEN}" \
-    -H 'Origin: http://localhost:19006' \
-    -H 'Referer: http://localhost:19006/' \
+    -H 'Origin: http://localhost:5173' \
+    -H 'Referer: http://localhost:5173/' \
     -H 'Content-Type: application/json' \
     --data-raw "{\"display_name\": \"${DISPLAY_NAME}\",\"is_admin\": ${IS_ADMIN}}" \
    --compressed \

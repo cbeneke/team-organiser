@@ -14,14 +14,33 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 const defaultTheme = createTheme();
 
 export const Login:React.FC = ()=>{
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        console.log({
-          email: data.get('email'),
-          password: data.get('password'),
-        });
-      };
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const email = data.get('email');
+      const password = data.get('password');
+
+      try {
+        const response = await fetch('http://localhost:8000/auth/login', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json',
+          },
+          body: 'grant_type=password&username=' + email + '&password=' + password + '&scope=&client_id=&client_secret='
+      });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const result = await response.json();
+        localStorage.setItem('access_token', result.access_token);
+        window.location.href = '/calendar'; // Redirect to calendar on successful login
+      } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+      }
+    };
     
       return (
         <ThemeProvider theme={defaultTheme}>

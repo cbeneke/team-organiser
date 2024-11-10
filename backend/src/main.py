@@ -9,7 +9,7 @@ import src.events.router as events
 app = fastapi.FastAPI()
 
 origins = [
-    "http://localhost:19006",
+    "http://localhost:5173",
     "https://pb.wirelab.org",
     "https://pbdev.wirelab.org",
 ]
