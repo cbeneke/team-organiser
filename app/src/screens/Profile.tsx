@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
-
-interface RoleData {
-  name: string;
-  description: string;
-}
-
-interface UserData {
-  id: string;
-  username: string;
-  display_name: string;
-  is_active: boolean;
-  roles: RoleData[];
-}
-
+import { UserData } from "../types/UserData";
 const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
 
 export const Profile: React.FC = () => {
