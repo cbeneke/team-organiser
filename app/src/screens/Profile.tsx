@@ -15,6 +15,8 @@ interface UserData {
   roles: RoleData[];
 }
 
+const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
+
 export const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -37,7 +39,7 @@ export const Profile: React.FC = () => {
         if (!token) {
             throw new Error('Nicht authentifiziert');
         }
-        const response = await fetch("http://localhost:8000/users/me", {
+        const response = await fetch(`${API_URL}/users/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -86,7 +88,7 @@ export const Profile: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/users/${userData.id}`, {
+      const response = await fetch(`${API_URL}/users/${userData.id}`, {
         method: "PUT",
         headers: {
           'Authorization': `Bearer ${token}`,

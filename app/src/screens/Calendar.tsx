@@ -6,6 +6,8 @@ import { Event } from "../types/Event";
 import { EventModal } from '../components/EventModal';
 import { EventDetailsModal } from '../components/EventDetailsModal';
 
+const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
+
 export const Calendar: React.FC = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState<Event[]>([]);
@@ -25,7 +27,7 @@ export const Calendar: React.FC = () => {
                 throw new Error('Nicht authentifiziert');
             }
 
-            const response = await fetch('http://localhost:8000/events/', {
+            const response = await fetch(`${API_URL}/events/`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -103,7 +105,7 @@ export const Calendar: React.FC = () => {
         const lockDateTime = new Date(startDateTime.getTime());
         lockDateTime.setUTCHours(lockDateTime.getUTCHours() - 2);
 
-        const response = await fetch('http://localhost:8000/events/', {
+        const response = await fetch(`${API_URL}/events/`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -162,7 +164,7 @@ export const Calendar: React.FC = () => {
             0
         ));
 
-        const response = await fetch(`http://localhost:8000/events/${event.id}`, {
+        const response = await fetch(`${API_URL}/events/${event.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -191,7 +193,7 @@ export const Calendar: React.FC = () => {
         }
 
         const queryParams = event.series_id && deleteAll ? '?update_all=true' : '';
-        const response = await fetch(`http://localhost:8000/events/${event.id}${queryParams}`, {
+        const response = await fetch(`${API_URL}/events/${event.id}${queryParams}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

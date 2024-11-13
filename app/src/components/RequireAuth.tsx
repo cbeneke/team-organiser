@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 let lastValidationTime = 0;
 const VALIDATION_INTERVAL = 30000; // 30 seconds in milliseconds
+const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
 
 export const RequireAuth = ({ children }: { children: JSX.Element }) => {
     const location = useLocation();
@@ -18,7 +19,7 @@ export const RequireAuth = ({ children }: { children: JSX.Element }) => {
                 return true;
             }
 
-            const response = await fetch('http://localhost:8000/users/me', {
+            const response = await fetch(`${API_URL}/users/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
