@@ -75,6 +75,7 @@ def add_series(
 
         # Increase start- and end-time for next loop
         new.start_time += delta
+        new.lock_time += delta
         new.end_time += delta
 
     return events

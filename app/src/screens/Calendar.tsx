@@ -33,12 +33,10 @@ export const Calendar: React.FC = () => {
             });
 
             if (!response.ok) {
-                console.log(response);
                 throw new Error('Fehler beim Laden der Termine');
             }
 
             const data = await response.json();
-            console.log(data);
             setEvents(data);
             setError(null);
         } catch (err) {
@@ -84,14 +82,26 @@ export const Calendar: React.FC = () => {
         const [startHours, startMinutes] = startTime.split(':').map(Number);
         const [endHours, endMinutes] = endTime.split(':').map(Number);
         
-        const startDateTime = new Date(selectedDate);
-        startDateTime.setHours(startHours, startMinutes, 0, 0);
+        const startDateTime = new Date(Date.UTC(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            startHours,
+            startMinutes,
+            0
+        ));
         
-        const endDateTime = new Date(selectedDate);
-        endDateTime.setHours(endHours, endMinutes, 0, 0);
+        const endDateTime = new Date(Date.UTC(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            endHours,
+            endMinutes,
+            0
+        ));
         
-        const lockDateTime = new Date(startDateTime);
-        lockDateTime.setHours(lockDateTime.getHours() - 2);
+        const lockDateTime = new Date(startDateTime.getTime());
+        lockDateTime.setUTCHours(lockDateTime.getUTCHours() - 2);
 
         const response = await fetch('http://localhost:8000/events/', {
             method: 'POST',
@@ -132,11 +142,25 @@ export const Calendar: React.FC = () => {
         const [startHours, startMinutes] = startTime.split(':').map(Number);
         const [endHours, endMinutes] = endTime.split(':').map(Number);
         
-        const startDateTime = new Date(event.start_time);
-        startDateTime.setHours(startHours, startMinutes, 0, 0);
+        const originalDate = new Date(event.start_time);
         
-        const endDateTime = new Date(event.end_time);
-        endDateTime.setHours(endHours, endMinutes, 0, 0);
+        const startDateTime = new Date(Date.UTC(
+            originalDate.getUTCFullYear(),
+            originalDate.getUTCMonth(),
+            originalDate.getUTCDate(),
+            startHours,
+            startMinutes,
+            0
+        ));
+        
+        const endDateTime = new Date(Date.UTC(
+            originalDate.getUTCFullYear(),
+            originalDate.getUTCMonth(),
+            originalDate.getUTCDate(),
+            endHours,
+            endMinutes,
+            0
+        ));
 
         const response = await fetch(`http://localhost:8000/events/${event.id}`, {
             method: 'PUT',
@@ -160,13 +184,14 @@ export const Calendar: React.FC = () => {
         await fetchEvents();
     };
 
-    const handleDeleteEvent = async (event: Event) => {
+    const handleDeleteEvent = async (event: Event, deleteAll: boolean = false) => {
         const token = localStorage.getItem('access_token');
         if (!token) {
             throw new Error('Nicht authentifiziert');
         }
 
-        const response = await fetch(`http://localhost:8000/events/${event.id}`, {
+        const queryParams = event.series_id && deleteAll ? '?update_all=true' : '';
+        const response = await fetch(`http://localhost:8000/events/${event.id}${queryParams}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -200,6 +225,7 @@ export const Calendar: React.FC = () => {
                 const dayEvents = getEventsForDate(currentDay);
                 const displayEvents = dayEvents.slice(0, 3);
                 const remainingEvents = dayEvents.length - 3;
+                const selectedDate = new Date(currentDay);
                 
                 days.push(
                     <div 
@@ -207,12 +233,7 @@ export const Calendar: React.FC = () => {
                         className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} 
                                   ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''}`}
                         onClick={() => {
-                            const now = new Date();
-                            const selectedDate = new Date(currentDay);
-                            // Prevent selecting dates in the past
-                            if (selectedDate >= now) {
-                                setSelectedDate(selectedDate);
-                            }
+                            setSelectedDate(selectedDate);
                         }}
                     >
                         <span className="day-number">{currentDay.getDate()}</span>
@@ -225,8 +246,8 @@ export const Calendar: React.FC = () => {
                                         key={event.id} 
                                         className={`event-indicator ${isLocked ? 'locked' : ''}`}
                                         title={`${event.title} (${startTime.toLocaleTimeString('de-DE', { 
-                                            hour: '2-digit', 
-                                            minute: '2-digit' 
+                                            hour: '2-digit',
+                                            minute: '2-digit'
                                         })})${isLocked ? ' (Gesperrt)' : ''}`}
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -234,8 +255,8 @@ export const Calendar: React.FC = () => {
                                         }}
                                     >
                                         {startTime.toLocaleTimeString('de-DE', { 
-                                            hour: '2-digit', 
-                                            minute: '2-digit' 
+                                            hour: '2-digit',
+                                            minute: '2-digit'
                                         })} {event.title}
                                     </div>
                                 );

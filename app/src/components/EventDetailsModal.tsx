@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import './EventModal.css';
 import { Event } from '../types/Event';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 
 interface EventDetailsModalProps {
     event: Event;
     onClose: () => void;
     onSave: (event: Event, title: string, description: string, startTime: string, endTime: string) => Promise<void>;
-    onDelete: (event: Event) => Promise<void>;
+    onDelete: (event: Event, deleteAll: boolean) => Promise<void>;
 }
 
 export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onClose, onSave, onDelete }) => {
@@ -20,8 +21,8 @@ export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onC
         new Date(event.end_time).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
     );
     const [saving, setSaving] = useState(false);
-    const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     const isLocked = new Date(event.lock_time) <= new Date();
 
@@ -50,22 +51,6 @@ export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onC
             setError(err instanceof Error ? err.message : 'Fehler beim Speichern');
         } finally {
             setSaving(false);
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!window.confirm('Möchten Sie diesen Termin wirklich löschen?')) {
-            return;
-        }
-
-        setDeleting(true);
-        try {
-            await onDelete(event);
-            onClose();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Fehler beim Löschen');
-        } finally {
-            setDeleting(false);
         }
     };
 
@@ -183,11 +168,10 @@ export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onC
                                     </button>
                                     <button 
                                         type="button"
-                                        onClick={handleDelete}
+                                        onClick={() => setShowDeleteConfirmation(true)}
                                         className="button-danger"
-                                        disabled={deleting}
                                     >
-                                        {deleting ? 'Löschen...' : 'Löschen'}
+                                        Löschen
                                     </button>
                                 </>
                             )}
@@ -195,6 +179,16 @@ export const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onC
                     </>
                 )}
             </div>
+            {showDeleteConfirmation && (
+                <DeleteConfirmationModal
+                    event={event}
+                    onClose={() => setShowDeleteConfirmation(false)}
+                    onConfirm={async (deleteAll) => {
+                        await onDelete(event, deleteAll);
+                        onClose();
+                    }}
+                />
+            )}
         </div>
     );
 }; 

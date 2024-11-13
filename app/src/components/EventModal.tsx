@@ -10,8 +10,8 @@ interface EventModalProps {
 export const EventModal: React.FC<EventModalProps> = ({ date, onClose, onSave }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [startTime, setStartTime] = useState('09:00');
-    const [endTime, setEndTime] = useState('17:00');
+    const [startTime, setStartTime] = useState('18:00');
+    const [endTime, setEndTime] = useState('20:00');
     const [recurrence, setRecurrence] = useState('once');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
