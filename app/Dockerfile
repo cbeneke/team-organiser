@@ -1,31 +1,23 @@
-# pull base image
-FROM node:21-slim
+# Build stage
+FROM node:21-slim AS builder
 
-# set our node environment to production
-ENV NODE_ENV production
-
-# expose port 5173 for node / vite
-EXPOSE 5173
-
-# install global packages
-ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
-ENV PATH /home/node/.npm-global/bin:$PATH
-RUN npm install --unsafe-perm -g npm@latest
-
-# install dependencies first
-RUN mkdir /app && chown node:node /app
 WORKDIR /app
-
-COPY ./package.json ./package-lock.json ./
-RUN chown -R node:node /app
+COPY package*.json ./
 RUN npm install
 
-# copy in our source code last, as it changes the most
-COPY --chown=node:node *.js *.tsx tsconfig.* *.html ./
-COPY --chown=node:node ./src ./src
-COPY --chown=node:node ./public ./public
+COPY *.js *.ts *.tsx *.html tsconfig.* ./
+COPY ./src ./src
+COPY ./public ./public
 
-USER node
+RUN npm run build
 
-ENTRYPOINT ["npm", "run"]
-CMD ["web"]
+# Production stage
+FROM nginx:alpine
+
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx config if needed
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80

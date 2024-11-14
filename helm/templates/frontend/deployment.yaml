@@ -29,7 +29,7 @@ spec:
           value: {{ $.Values.apiDomain }}
         ports:
         - name: http
-          containerPort: 5173
+          containerPort: 80
         volumeMounts:
         - name: config
           mountPath: /app/config

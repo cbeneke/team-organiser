@@ -6,6 +6,11 @@ export const Footer: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Hide footer on login page
+    if (location.pathname === '/login') {
+        return null;
+    }
+
     return (
         <footer className="mobile-footer">
             <div 
