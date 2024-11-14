@@ -1,0 +1,39 @@
+.layout {
+    min-height: 100vh;
+    padding-bottom: 60px; /* Same as footer height */
+}
+
+.main-content {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Adjust calendar container for mobile */
+@media (max-width: 768px) {
+    .calendar-container {
+        margin: 0.5rem auto;
+        padding: 10px;
+    }
+
+    .calendar-header {
+        padding: 0 5px 10px 5px;
+    }
+
+    .current-month {
+        font-size: 1.2rem;
+    }
+
+    .weekday {
+        padding: 5px;
+        font-size: 0.8rem;
+    }
+
+    .calendar-day {
+        padding: 4px;
+    }
+
+    .day-number {
+        font-size: 0.8rem;
+    }
+} 
