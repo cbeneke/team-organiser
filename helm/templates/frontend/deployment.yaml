@@ -24,9 +24,6 @@ spec:
         {{- if (eq $.Values.image.tag "dev") }}
         imagePullPolicy: Always
         {{- end }}
-        env:
-        - name: API_URL
-          value: https://{{ $.Values.apiDomain }}
         ports:
         - name: http
           containerPort: 80
