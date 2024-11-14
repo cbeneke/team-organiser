@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import { UserData } from "../types/UserData";
-const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL;
+if (!API_URL) {
+    throw new Error('API_URL environment variable is not set');
+}
 
 export const Profile: React.FC = () => {
   const navigate = useNavigate();

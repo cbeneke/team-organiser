@@ -6,7 +6,10 @@ import { Event } from "../types/Event";
 import { EventModal } from '../components/EventModal';
 import { EventDetailsModal } from '../components/EventDetailsModal';
 
-const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL;
+if (!API_URL) {
+    throw new Error('API_URL environment variable is not set');
+}
 
 export const Calendar: React.FC = () => {
     const [currentDate, setCurrentDate] = useState(new Date());

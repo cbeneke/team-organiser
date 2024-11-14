@@ -12,6 +12,10 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const defaultTheme = createTheme();
+const API_URL = import.meta.env.VITE_API_URL;
+if (!API_URL) {
+    throw new Error('API_URL environment variable is not set');
+}
 
 export const Login:React.FC = ()=>{
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -21,7 +25,7 @@ export const Login:React.FC = ()=>{
       const password = data.get('password');
 
       try {
-        const response = await fetch('http://localhost:8000/auth/login', {
+        const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: {
               'Content-Type': 'application/x-www-form-urlencoded',

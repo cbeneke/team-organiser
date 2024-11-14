@@ -3,7 +3,10 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 let lastValidationTime = 0;
 const VALIDATION_INTERVAL = 30000; // 30 seconds in milliseconds
-const API_URL = import.meta.env.API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL;
+if (!API_URL) {
+    throw new Error('API_URL environment variable is not set');
+}
 
 export const RequireAuth = ({ children }: { children: JSX.Element }) => {
     const location = useLocation();

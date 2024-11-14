@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY *.js *.ts *.tsx *.html tsconfig.* ./
+COPY .env.* ./
 COPY ./src ./src
 COPY ./public ./public
 
