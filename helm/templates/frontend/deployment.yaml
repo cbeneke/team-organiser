@@ -25,8 +25,8 @@ spec:
         imagePullPolicy: Always
         {{- end }}
         env:
-        - name: API_DOMAIN
-          value: {{ $.Values.apiDomain }}
+        - name: API_URL
+          value: https://{{ $.Values.apiDomain }}
         ports:
         - name: http
           containerPort: 80
